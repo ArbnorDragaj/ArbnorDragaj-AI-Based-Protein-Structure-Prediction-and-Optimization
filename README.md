@@ -13,7 +13,7 @@ Te gjejme nje strukture me energji sa me te ulet, pa mbivendosje te aminoacideve
 
 ## Mjetet
 
-- C++17
+-
 - Visual Studio Community
 
 Kodi do te shtohet hap pas hapi.
