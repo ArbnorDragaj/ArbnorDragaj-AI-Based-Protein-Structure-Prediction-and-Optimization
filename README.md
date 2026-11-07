@@ -1,6 +1,6 @@
 # Parashikimi dhe optimizimi i struktures se proteinave
 
-Projekt ne C++ per paraqitjen e nje proteine ne nje rrjete 3D.
+Projekt  per paraqitjen e nje proteine ne nje rrjete 3D.
 
 ## Qellimi
 
