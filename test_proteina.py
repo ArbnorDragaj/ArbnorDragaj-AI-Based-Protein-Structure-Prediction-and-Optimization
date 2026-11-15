@@ -48,6 +48,13 @@ class TestProteina(unittest.TestCase):
         a=simulated_annealing('AVILMFWYACDE',1,500,30,7)
         b=simulated_annealing('AVILMFWYACDE',1,500,30,7)
         self.assertEqual((a.pikat,a.energjia),(b.pikat,b.energjia))
+
+    def test_koha_e_rezultatit_me_te_mire(self):
+        for funksioni in (simulated_annealing, beam_search):
+            rezultat = funksioni('AVILMFWYACDE', 1, 1000, 10)
+            self.assertGreaterEqual(rezultat.koha_me_e_mire, 0)
+            self.assertLessEqual(rezultat.koha_me_e_mire, rezultat.koha)
+            self.assertLessEqual(rezultat.tentativa_me_e_mire, rezultat.gjeneruar)
     def test_beam_katrori(self):
         self.assertEqual(beam_search('AAAA',1,200,10).energjia,-1)
 

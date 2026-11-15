@@ -88,6 +88,7 @@ class Rezultati:
     hequr: int = 0
     koha: float = 0
     tentativa_me_e_mire: int = 0
+    koha_me_e_mire: float = 0
     arsyeja: str = ''
     rezerve: bool = False
     historia: list = field(default_factory=list)
@@ -118,6 +119,7 @@ def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
                     if e_aktuale < e_mire:
                         me_e_mira, e_mire = aktuale.copy(), e_aktuale
                         r.tentativa_me_e_mire = r.gjeneruar
+                        r.koha_me_e_mire = time.perf_counter()-fillimi
                         r.historia.append((r.gjeneruar, e_mire))
             temperatura = max(1e-9, temperatura*0.995)
     r.pikat, r.energjia = me_e_mira, e_mire
@@ -160,6 +162,7 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30):
                         if e <= e_mire:
                             me_e_mira, e_mire = i_ri, e
                             r.tentativa_me_e_mire = r.gjeneruar
+                            r.koha_me_e_mire = time.perf_counter()-fillimi
                             r.historia.append((r.gjeneruar, e_mire))
                             r.rezerve = False
                 if not perfundoi:

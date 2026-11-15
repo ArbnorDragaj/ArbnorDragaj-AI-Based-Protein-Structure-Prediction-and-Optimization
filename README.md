@@ -141,7 +141,7 @@ SA propozon struktura të plota dhe përdor rastësi; Beam zgjeron prefikse dhe 
 
 ## Matjet dhe rezultatet
 
-Për secilin algoritëm, dritarja shfaq energjinë, kohën, memorien e gjurmuar, numrin e kandidatëve të gjeneruar, validë dhe invalidë, vlefshmërinë, tentativën ku u gjet rezultati më i mirë dhe përdorimin e rezervës.
+Për secilin algoritëm, dritarja shfaq energjinë, kohën, memorien e gjurmuar, numrin e kandidatëve të gjeneruar, validë dhe invalidë, vlefshmërinë, kohën dhe tentativën kur u gjet rezultati më i mirë, arsyen e ndalimit dhe përdorimin e rezervës. Nëse struktura fillestare mbetet më e mira, koha dhe tentativa janë zero.
 
 Për Beam shfaqet edhe numri i kandidatëve validë të hequr nga gjerësia Beam:
 
