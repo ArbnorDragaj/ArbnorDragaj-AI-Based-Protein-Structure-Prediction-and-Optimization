@@ -37,4 +37,24 @@ class TestProteina(unittest.TestCase):
     def test_beam_katrori(self):
         self.assertEqual(beam_search('AAAA',1,200,10).energjia,-1)
 
+    def test_algoritmet_pranojne_shkronja_te_vogla(self):
+        for funksioni in (simulated_annealing, beam_search):
+            rezultat = funksioni(' aaaa ', 1, 200, 10)
+            self.assertEqual(rezultat.sekuenca, 'AAAA')
+            self.assertEqual(rezultat.energjia, energjia('AAAA', rezultat.pikat))
+
+    def test_parametrat_e_pavlefshem(self):
+        for funksioni in (simulated_annealing, beam_search):
+            for args in (('', 1, 10, 1), ('AB', 1, 10, 1),
+                         ('AAAA', 0, 10, 1), ('AAAA', float('nan'), 10, 1),
+                         ('AAAA', 1, 0, 1), ('AAAA', 1, 1.5, 1),
+                         ('AAAA', 1, 10, float('inf'))):
+                with self.subTest(funksioni=funksioni.__name__, args=args):
+                    with self.assertRaises(ValueError):
+                        funksioni(*args)
+        with self.assertRaises(ValueError):
+            beam_search('AAAA', 1, 20, 1, 0)
+        with self.assertRaises(ValueError):
+            simulated_annealing('AAAA', 1, 20, 1, seed=1.5)
+
 if __name__ == '__main__': unittest.main()

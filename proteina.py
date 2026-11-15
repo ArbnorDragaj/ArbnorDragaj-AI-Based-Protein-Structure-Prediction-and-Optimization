@@ -38,6 +38,18 @@ def kontaktet(sekuenca, pikat):
 def energjia(sekuenca, pikat, pesha=1.0):
     return -pesha * kontaktet(sekuenca, pikat)
 
+def kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda):
+    """Kontroll i përbashkët edhe kur algoritmet thirren pa ndërfaqe."""
+    sekuenca = sekuenca_e_sakte(sekuenca)
+    if type(kufiri) is not int or kufiri <= 0:
+        raise ValueError('Tentativat duhet të jenë numër i plotë pozitiv.')
+    for emri, vlera in (('Pesha', pesha), ('Koha', sekonda)):
+        if isinstance(vlera, bool) or not isinstance(vlera, (int, float)):
+            raise ValueError(f'{emri} duhet të jetë numër pozitiv.')
+        if not math.isfinite(vlera) or vlera <= 0:
+            raise ValueError(f'{emri} duhet të jetë pozitive dhe e fundme.')
+    return sekuenca
+
 def rrotullo(pikat, pivot, boshti, shenja):
     qendra = pikat[pivot]
     rezultat = pikat[:pivot+1]
@@ -69,6 +81,9 @@ class Rezultati:
     historia: list = field(default_factory=list)
 
 def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
+    sekuenca = kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda)
+    if type(seed) is not int:
+        raise ValueError('Seed duhet të jetë numër i plotë.')
     fillimi = time.perf_counter()
     rng = random.Random(seed)
     aktuale = zinxhiri(len(sekuenca))
@@ -100,6 +115,9 @@ def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
     return r
 
 def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30):
+    sekuenca = kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda)
+    if type(gjeresia) is not int or gjeresia <= 0:
+        raise ValueError('Gjerësia Beam duhet të jetë numër i plotë pozitiv.')
     fillimi = time.perf_counter()
     n = len(sekuenca)
     me_e_mira = zinxhiri(n)
