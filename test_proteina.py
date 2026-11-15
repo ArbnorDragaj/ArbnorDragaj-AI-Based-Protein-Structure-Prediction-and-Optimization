@@ -10,6 +10,20 @@ class TestProteina(unittest.TestCase):
         self.assertTrue(valide([(0,0,0),(1,0,0),(1,-1,0)],3))
         self.assertFalse(valide([(0,0,0),(1,0,0),(0,0,0)],3))
         self.assertFalse(valide([(0,0,0),(2,0,0)],2))
+
+    def test_koordinatat_e_pavlefshme(self):
+        for pikat, n in (([], 0), ([(0,0,0)], 2),
+                         ([(0,0)], 1), ([(0,0,1.0)], 1),
+                         ([(0,0,True)], 1), ([[0,0,0]], 1)):
+            with self.subTest(pikat=pikat, n=n):
+                self.assertFalse(valide(pikat, n))
+
+    def test_energjia_refuzon_strukture_te_pavlefshme(self):
+        for pikat in ([(0,0,0)], [(0,0,0),(2,0,0)],
+                      [(0,0,0),(0,0,0)]):
+            with self.subTest(pikat=pikat):
+                with self.assertRaises(ValueError):
+                    energjia('AA', pikat)
     def test_energjia(self):
         katror = [(0,0,0),(1,0,0),(1,1,0),(0,1,0)]
         self.assertEqual(energjia('AAAA',katror),-1)

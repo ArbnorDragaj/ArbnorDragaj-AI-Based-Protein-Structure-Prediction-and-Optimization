@@ -18,9 +18,19 @@ def zinxhiri(n):
     return [(i, 0, 0) for i in range(n)]
 
 def valide(pikat, n):
-    return (len(pikat) == n and len(set(pikat)) == n and
-            all(sum(abs(a[k]-b[k]) for k in range(3)) == 1
-                for a, b in zip(pikat, pikat[1:])))
+    if type(n) is not int or n <= 0 or len(pikat) != n:
+        return False
+    zena = set()
+    for i, pika in enumerate(pikat):
+        if (not isinstance(pika, tuple) or len(pika) != 3 or
+                any(type(vlera) is not int for vlera in pika)):
+            return False
+        if pika in zena:
+            return False
+        if i and sum(abs(pika[k]-pikat[i-1][k]) for k in range(3)) != 1:
+            return False
+        zena.add(pika)
+    return True
 
 def kontaktet(sekuenca, pikat):
     """Numëron kontaktet H-H jo radhazi, secilin një herë."""
@@ -36,6 +46,8 @@ def kontaktet(sekuenca, pikat):
     return kontakte
 
 def energjia(sekuenca, pikat, pesha=1.0):
+    if not valide(pikat, len(sekuenca)):
+        raise ValueError('Struktura është e pavlefshme ose gjatësia nuk përputhet.')
     return -pesha * kontaktet(sekuenca, pikat)
 
 def kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda):
