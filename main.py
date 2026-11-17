@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from proteina import HIDROFOBIKE, sekuenca_e_sakte, simulated_annealing, beam_search, valide
 from matja import mat_memorien
+from grafiket import hap_grafiket
 
 class Aplikacioni:
     def __init__(self, root):
@@ -58,6 +59,8 @@ class Aplikacioni:
         lista.pack(fill='x')
         lista.bind('<<ComboboxSelected>>', lambda _: self.vizato())
         ttk.Button(majtas, text='Rivendos pamjen', command=lambda: self.vizato(True)).pack(fill='x', pady=8)
+        ttk.Button(majtas, text='Grafikët e eksperimenteve',
+                   command=lambda: hap_grafiket(self.root)).pack(fill='x', pady=(0, 5))
         ttk.Label(majtas, text='Mausi: rrotullo  ·  Rrota: zoom\nPortokalli: H  ·  Blu: P', style='NenTitull.TLabel', justify='left').pack(anchor='w', pady=5)
         self.statusi = tk.StringVar(value='Shkruaj sekuencën dhe shtyp Ekzekuto.')
         ttk.Label(majtas, textvariable=self.statusi, style='Gjendje.TLabel', wraplength=220).pack(anchor='w', pady=10)
