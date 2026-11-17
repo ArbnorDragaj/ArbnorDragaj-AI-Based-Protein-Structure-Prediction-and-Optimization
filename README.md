@@ -88,6 +88,8 @@ Nëse mungon Tkinter, instalojeni nga paketat e sistemit për shpërndarjen tuaj
 4. Te **Shfaq strukturën**, zgjidh Simulated Annealing ose Beam Search për të parë rezultatin përkatës.
 5. Tërhiq figurën me butonin e majtë të mausit për ta rrotulluar; përdor rrotën për zmadhim. **Rivendos pamjen** kthen këndin fillestar.
 
+Butoni **Grafikët e eksperimenteve** hap një dritare ku mund të zgjedhësh energjinë, kohën, memorien Python, kandidatët ose konvergjencën. Grafikët lexohen nga skedarët PNG në `rezultate/`; janë rezultate të eksperimenteve të ruajtura, jo të simulimit aktual. Për t'i përditësuar, ekzekuto `eksperimente.py` dhe hape përsëri dritaren e grafikëve. Nëse mungojnë të gjithë grafikët, aplikacioni shfaq udhëzimin për krijimin e tyre.
+
 Zgjedhësi ndryshon strukturën e shfaqur; nuk e nis algoritmin veçmas. Grafiku paraqet rezultatin përfundimtar, jo çdo lëvizje gjatë kërkimit.
 
 | Fusha | Vlera fillestare | Kuptimi |
@@ -197,6 +199,7 @@ Testet kontrollojnë inputin, vlefshmërinë, përplasjet, lidhjet e prishura, e
 
 ```text
 ├── main.py             # Ndërfaqja dhe pamja interaktive 3D
+├── grafiket.py         # Shfaqja e grafikëve të ruajtur brenda aplikacionit
 ├── proteina.py         # Modeli HP, energjia dhe dy algoritmet
 ├── matja.py            # Matja e memories në proces të veçantë
 ├── eksperimente.py     # Eksperimentet dhe grafikët
