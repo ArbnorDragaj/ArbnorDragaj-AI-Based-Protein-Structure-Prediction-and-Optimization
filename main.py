@@ -89,6 +89,7 @@ class Aplikacioni:
         except ValueError as error:
             messagebox.showerror('Input i pavlefshëm', str(error), parent=self.root)
             return
+        self.fushat['sekuenca'].set(s)
         self.buton.config(state='disabled')
         self.statusi.set('Duke llogaritur të dy algoritmet…')
         def puno():
