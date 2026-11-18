@@ -7,7 +7,7 @@ from tkinter import ttk, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
-from proteina import HIDROFOBIKE, sekuenca_e_sakte, simulated_annealing, beam_search, valide
+from proteina import HIDROFOBIKE, sekuenca_e_sakte, simulated_annealing, beam_search, valide, kontaktet
 from matja import mat_memorien
 from grafiket import hap_grafiket
 
@@ -116,6 +116,7 @@ class Aplikacioni:
                 for r,m in zip(rezultatet, memoriet):
                     perqindja = 100*r.hequr/r.valide if r.valide else 0
                     self.teksti.insert('end', f'{r.algoritmi}: E={r.energjia:g} | koha={r.koha:.4f}s | memoria={m["bajte"]/1024:.1f} KiB\n')
+                    self.teksti.insert('end', f'  Kontakte H–H jo radhazi: {kontaktet(r.sekuenca, r.pikat)}\n')
                     self.teksti.insert('end', f'  Kandidatë: {r.gjeneruar}; validë: {r.valide}; invalidë: {r.invalide}; hequr nga Beam: {r.hequr} ({perqindja:.1f}% e validëve)\n')
                     self.teksti.insert('end', f'  E vlefshme: {"Po" if valide(r.pikat,len(r.sekuenca)) else "Jo"}; tentativa më e mirë: {r.tentativa_me_e_mire}; rezervë: {"Po" if r.rezerve else "Jo"}; matja e memories: {m["kandidate"]} kandidatë.\n')
                     self.teksti.insert('end', f'  Koha e rezultatit më të mirë: {r.koha_me_e_mire:.4f} s; ndalimi: {r.arsyeja}\n')
