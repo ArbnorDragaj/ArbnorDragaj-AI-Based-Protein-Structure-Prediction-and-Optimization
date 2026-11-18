@@ -62,6 +62,11 @@ def hap_grafiket(parent):
         try:
             imazhi = imread(te_pranishem[zgjedhja.get()])
         except (OSError, ValueError, SyntaxError) as gabim:
+            boshti.clear()
+            boshti.set_axis_off()
+            boshti.text(0.5, 0.5, 'Grafiku i zgjedhur nuk mund të lexohet.',
+                        ha='center', va='center', transform=boshti.transAxes)
+            canvas.draw_idle()
             messagebox.showerror('Grafiku nuk hapet', str(gabim), parent=dritarja)
             return
         boshti.clear()
