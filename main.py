@@ -47,7 +47,8 @@ class Aplikacioni:
                                    ('tentativa','Tentativat maksimale','3000'), ('beam','Gjerësia Beam','30')]:
             ttk.Label(majtas, text=label, style='Anash.TLabel').pack(anchor='w')
             var = tk.StringVar(value=value)
-            ttk.Entry(majtas, textvariable=var, width=27).pack(fill='x', pady=(3,8), ipady=1)
+            ttk.Entry(majtas, textvariable=var, width=27,
+                      state='readonly' if key == 'gjatesia' else 'normal').pack(fill='x', pady=(3,8), ipady=1)
             self.fushat[key] = var
         self.fushat['sekuenca'].trace_add('write', lambda *_: self.fushat['gjatesia'].set(str(len(self.fushat['sekuenca'].get().strip()))))
         self.buton = ttk.Button(majtas, text='Ekzekuto dhe krahaso', command=self.nis, style='Kryesor.TButton')
