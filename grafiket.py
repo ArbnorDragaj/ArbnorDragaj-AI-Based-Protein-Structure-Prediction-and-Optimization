@@ -16,6 +16,14 @@ GRAFIKET = {
     'Konvergjenca': 'konvergjenca.png',
 }
 
+SHPJEGIMET = {
+    'Energjia': 'Energjia sipas gjatësisë së sekuencës. Vlera më e ulët është më e mirë në modelin HP.',
+    'Koha': 'Koha e ekzekutimit në sekonda sipas gjatësisë së sekuencës.',
+    'Memoria Python': 'Kulmi i alokimeve Python, matur veçmas me tracemalloc; jo RAM-i i gjithë procesit.',
+    'Kandidatët': 'Numri i kandidatëve të gjeneruar; përfshin kandidatët validë dhe invalidë.',
+    'Konvergjenca': 'Energjia më e mirë kundrejt kandidatëve, për sekuencën e përzier me gjatësi 18.',
+}
+
 
 def hap_grafiket(parent):
     folder = Path(__file__).resolve().parent / 'rezultate'
@@ -39,6 +47,9 @@ def hap_grafiket(parent):
     lista.pack(side='left')
     ttk.Label(dritarja, text='Rezultatet e eksperimenteve të ruajtura; jo të simulimit aktual.',
               padding=(10, 0, 10, 5)).pack(anchor='w')
+    shpjegimi = tk.StringVar(dritarja)
+    ttk.Label(dritarja, textvariable=shpjegimi, wraplength=620,
+              padding=(10, 0, 10, 5)).pack(anchor='w')
     figura = Figure(figsize=(10, 5), dpi=100)
     boshti = figura.add_subplot(111)
     figura.subplots_adjust(left=0, right=1, bottom=0, top=1)
@@ -47,6 +58,7 @@ def hap_grafiket(parent):
     canvas.get_tk_widget().pack(fill='both', expand=True)
 
     def shfaq(event=None):
+        shpjegimi.set(SHPJEGIMET[zgjedhja.get()])
         try:
             imazhi = imread(te_pranishem[zgjedhja.get()])
         except (OSError, ValueError, SyntaxError) as gabim:
