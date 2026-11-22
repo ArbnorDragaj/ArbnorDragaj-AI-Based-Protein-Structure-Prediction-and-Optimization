@@ -35,6 +35,7 @@ class Aplikacioni:
         stili.configure('Nendarje.TLabel', background='#eef3f6', foreground='#193744', font=('Segoe UI', 11, 'bold'))
         self.radha = queue.Queue()
         self.rezultatet = []
+        self.zoom = 1.0
         self.fushat = {}
         majtas = ttk.Frame(root, padding=(20, 18), style='Anash.TFrame')
         majtas.pack(side='left', fill='y')
@@ -65,10 +66,15 @@ class Aplikacioni:
         ttk.Label(majtas, text='Mausi: rrotullo  ·  Rrota: zoom\nPortokalli: H  ·  Blu: P', style='NenTitull.TLabel', justify='left').pack(anchor='w', pady=5)
         self.statusi = tk.StringVar(value='Shkruaj sekuencën dhe shtyp Ekzekuto.')
         ttk.Label(majtas, textvariable=self.statusi, style='Gjendje.TLabel', wraplength=220).pack(anchor='w', pady=10)
-        ttk.Label(djathtas, text='Pamja e strukturës', style='Nendarje.TLabel').pack(anchor='w', pady=(0, 5))
+        kontrollet = ttk.Frame(djathtas, style='Pune.TFrame')
+        kontrollet.pack(fill='x', pady=(0, 5))
+        ttk.Label(kontrollet, text='Pamja e strukturës', style='Nendarje.TLabel').pack(side='left')
+        ttk.Button(kontrollet, text='Zmadho +', command=lambda: self.zmadho(1.15)).pack(side='right', padx=3)
+        ttk.Button(kontrollet, text='Zvogëlo −', command=lambda: self.zmadho(1/1.15)).pack(side='right', padx=3)
         self.figura = Figure(figsize=(7,5), dpi=100, facecolor='#f8fbfc')
         self.boshti = self.figura.add_subplot(111, projection='3d')
         self.canvas = FigureCanvasTkAgg(self.figura, master=djathtas)
+        self.canvas.mpl_connect('scroll_event', self.zoom_me_maus)
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         ttk.Label(djathtas, text='Rezultatet e krahasimit', style='Nendarje.TLabel').pack(anchor='w', pady=(10, 5))
         self.teksti = tk.Text(djathtas, height=8, wrap='word', font=('Consolas', 10),
@@ -126,6 +132,15 @@ class Aplikacioni:
             pass
         self.root.after(100, self.kontrollo)
 
+    def zmadho(self, faktori):
+        self.zoom = min(1.8, max(0.6, self.zoom * faktori))
+        self.boshti.set_box_aspect((1, 1, 1), zoom=self.zoom)
+        self.canvas.draw_idle()
+
+    def zoom_me_maus(self, event):
+        if event.inaxes is self.boshti and event.step:
+            self.zmadho(1.15 if event.step > 0 else 1/1.15)
+
     def vizato(self, rivendos=False):
         from proteina import zinxhiri
         if self.rezultatet:
@@ -135,10 +150,13 @@ class Aplikacioni:
             s = 'AVILMFWYACDE'
             pikat, titulli = zinxhiri(len(s)), 'Struktura fillestare'
         a = self.boshti
+        if rivendos:
+            self.zoom = 1.0
         elev, azim = (25, -60) if rivendos else (a.elev, a.azim)
         a.clear()
         x,y,z = zip(*pikat)
         a.set_facecolor('#f8fbfc')
+        a.set_axis_on()
         for bosht in (a.xaxis, a.yaxis, a.zaxis):
             bosht.set_pane_color((0.95, 0.98, 0.98, 0.30))
         a.tick_params(colors='#667d86', labelsize=8, pad=1)
@@ -155,7 +173,7 @@ class Aplikacioni:
         a.set_xlim(mijesi[0]-rrezja,mijesi[0]+rrezja)
         a.set_ylim(mijesi[1]-rrezja,mijesi[1]+rrezja)
         a.set_zlim(mijesi[2]-rrezja,mijesi[2]+rrezja)
-        a.set_box_aspect((1,1,1))
+        a.set_box_aspect((1,1,1), zoom=self.zoom)
         a.view_init(elev=elev, azim=azim)
         a.set(xlabel='X', ylabel='Y', zlabel='Z')
         a.set_title(titulli, color='#193744', fontsize=13, fontweight='bold', pad=12)
