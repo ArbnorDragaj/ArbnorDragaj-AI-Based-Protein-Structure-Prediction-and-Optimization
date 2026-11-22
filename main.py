@@ -69,8 +69,6 @@ class Aplikacioni:
         kontrollet = ttk.Frame(djathtas, style='Pune.TFrame')
         kontrollet.pack(fill='x', pady=(0, 5))
         ttk.Label(kontrollet, text='Pamja e strukturës', style='Nendarje.TLabel').pack(side='left')
-        ttk.Button(kontrollet, text='Zmadho +', command=lambda: self.zmadho(1.15)).pack(side='right', padx=3)
-        ttk.Button(kontrollet, text='Zvogëlo −', command=lambda: self.zmadho(1/1.15)).pack(side='right', padx=3)
         self.figura = Figure(figsize=(7,5), dpi=100, facecolor='#f8fbfc')
         self.boshti = self.figura.add_subplot(111, projection='3d')
         self.canvas = FigureCanvasTkAgg(self.figura, master=djathtas)

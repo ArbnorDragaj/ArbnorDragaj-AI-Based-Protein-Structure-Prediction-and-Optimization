@@ -86,9 +86,9 @@ Nëse mungon Tkinter, instalojeni nga paketat e sistemit për shpërndarjen tuaj
 2. Gjatësia përditësohet automatikisht. Mund të ndryshosh peshën e kontakteve H–H, kufirin kohor, tentativat dhe gjerësinë Beam; këto vlera duhet të jenë pozitive.
 3. Shtyp **Ekzekuto dhe krahaso**. Programi ekzekuton të dy algoritmet njëri pas tjetrit dhe shfaq përmbledhjen poshtë figurës.
 4. Te **Shfaq strukturën**, zgjidh Simulated Annealing ose Beam Search për të parë rezultatin përkatës.
-5. Tërhiq figurën me butonin e majtë të mausit për ta rrotulluar. Përdor **Zmadho +**, **Zvogëlo −** ose rrotën e mausit mbi figurë për të ndryshuar zmadhimin. **Rivendos pamjen** kthen këndin dhe zmadhimin fillestar.
+5. Tërhiq figurën me butonin e majtë të mausit për ta rrotulluar. Përdor rrotën e mausit mbi figurë për të ndryshuar zmadhimin. **Rivendos pamjen** kthen këndin dhe zmadhimin fillestar.
 
-Zmadhimi ndryshon vetëm kamerën; koordinatat, lidhjet dhe energjia e proteinës mbeten të njëjta. Boshtet X, Y, Z dhe rrjeta koordinative janë të dukshme. Butonat dhe rrota e mausit lejojnë zmadhim nga 0.6 deri në 1.8 herë kundrejt pamjes fillestare.
+Zmadhimi ndryshon vetëm kamerën; koordinatat, lidhjet dhe energjia e proteinës mbeten të njëjta. Boshtet X, Y, Z dhe rrjeta koordinative janë të dukshme. Rrota e mausit lejon zmadhim nga 0.6 deri në 1.8 herë kundrejt pamjes fillestare.
 
 Butoni **Grafikët e eksperimenteve** hap një dritare ku mund të zgjedhësh energjinë, kohën, memorien Python, kandidatët ose konvergjencën. Grafikët lexohen nga skedarët PNG në `rezultate/`; janë rezultate të eksperimenteve të ruajtura, jo të simulimit aktual. Për t'i përditësuar, ekzekuto `eksperimente.py` dhe hape përsëri dritaren e grafikëve. Nëse mungojnë të gjithë grafikët, aplikacioni shfaq udhëzimin për krijimin e tyre.
 
