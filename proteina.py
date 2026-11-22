@@ -9,6 +9,8 @@ HIDROFOBIKE = set('AVILMFWYC')
 DREJTIMET = ((1,0,0), (-1,0,0), (0,1,0), (0,-1,0), (0,0,1), (0,0,-1))
 
 def sekuenca_e_sakte(text):
+    if not isinstance(text, str):
+        raise ValueError('Sekuenca duhet të jetë tekst.')
     text = text.strip()
     if not text or any(c not in AMINOACIDET + AMINOACIDET.lower() for c in text):
         raise ValueError('Shkruaj një sekuencë me aminoacide të vlefshme: ' + AMINOACIDET)
@@ -46,19 +48,45 @@ def kontaktet(sekuenca, pikat):
     return kontakte
 
 def energjia(sekuenca, pikat, pesha=1.0):
+    sekuenca = sekuenca_e_sakte(sekuenca)
+    kontrollo_peshen(pesha)
     if not valide(pikat, len(sekuenca)):
         raise ValueError('Struktura është e pavlefshme ose gjatësia nuk përputhet.')
-    return -pesha * kontaktet(sekuenca, pikat)
+    return energjia_e_kontakteve(kontaktet(sekuenca, pikat), pesha)
+
+def kontrollo_peshen(pesha):
+    if isinstance(pesha, bool) or not isinstance(pesha, (int, float)):
+        raise ValueError('Pesha duhet të jetë numër pozitiv dhe i fundëm.')
+    try:
+        e_sakte = math.isfinite(pesha) and pesha > 0
+    except OverflowError:
+        e_sakte = False
+    if not e_sakte:
+        raise ValueError('Pesha duhet të jetë pozitive dhe e fundme.')
+
+def energjia_e_kontakteve(numri, pesha):
+    try:
+        e = -pesha * numri
+        if math.isfinite(e):
+            return e
+    except OverflowError:
+        pass
+    raise ValueError('Energjia tejkalon saktësinë numerike. Zvogëlo peshën e kontakteve.')
 
 def kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda):
     """Kontroll i përbashkët edhe kur algoritmet thirren pa ndërfaqe."""
     sekuenca = sekuenca_e_sakte(sekuenca)
+    kontrollo_peshen(pesha)
     if type(kufiri) is not int or kufiri <= 0:
         raise ValueError('Tentativat duhet të jenë numër i plotë pozitiv.')
     for emri, vlera in (('Pesha', pesha), ('Koha', sekonda)):
         if isinstance(vlera, bool) or not isinstance(vlera, (int, float)):
             raise ValueError(f'{emri} duhet të jetë numër pozitiv.')
-        if not math.isfinite(vlera) or vlera <= 0:
+        try:
+            e_sakte = math.isfinite(vlera) and vlera > 0
+        except OverflowError:
+            e_sakte = False
+        if not e_sakte:
             raise ValueError(f'{emri} duhet të jetë pozitive dhe e fundme.')
     return sekuenca
 
@@ -92,6 +120,19 @@ class Rezultati:
     arsyeja: str = ''
     rezerve: bool = False
     historia: list = field(default_factory=list)
+    prefikse_te_hequra: list = field(default_factory=list)
+    plota_te_gjeneruara: int = 0
+    plotesime_te_vleresuara: int = 0
+
+def ploteso_drejt(prefiksi, n):
+    """Provo gjashtë bishta të drejtë; mungesa e tyre nuk provon pamundësi."""
+    zena = set(prefiksi)
+    x, y, z = prefiksi[-1]
+    for dx, dy, dz in DREJTIMET:
+        bishti = [(x+dx*k, y+dy*k, z+dz*k) for k in range(1, n-len(prefiksi)+1)]
+        if not any(p in zena for p in bishti):
+            return prefiksi + bishti
+    return None
 
 def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
     sekuenca = kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda)
@@ -128,7 +169,7 @@ def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
     r.historia.append((r.gjeneruar, e_mire))
     return r
 
-def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30):
+def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30, *, gjurmo_pruning=False):
     sekuenca = kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda)
     if type(gjeresia) is not int or gjeresia <= 0:
         raise ValueError('Gjerësia Beam duhet të jetë numër i plotë pozitiv.')
@@ -148,6 +189,7 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30):
                 for dx,dy,dz in DREJTIMET:
                     if r.gjeneruar >= kufiri or time.perf_counter()-fillimi >= sekonda:
                         perfundoi = False
+                        r.arsyeja = 'U arrit buxheti.' if r.gjeneruar >= kufiri else 'U arrit koha.'
                         break
                     r.gjeneruar += 1
                     p = (x+dx,y+dy,z+dz)
@@ -158,6 +200,8 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30):
                     i_ri = prefiksi + [p]
                     e = energjia(sekuenca[:len(i_ri)], i_ri, pesha)
                     kandidatet.append((e, tuple(i_ri)))
+                    if len(i_ri) == n:
+                        r.plota_te_gjeneruara += 1
                     if len(i_ri) == n and (r.rezerve or e < e_mire):
                         if e <= e_mire:
                             me_e_mira, e_mire = i_ri, e
@@ -171,10 +215,32 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30):
                 break
             kandidatet.sort()
             r.hequr += max(0, len(kandidatet)-gjeresia)
+            if gjurmo_pruning:
+                r.prefikse_te_hequra.extend(p for _, p in kandidatet[gjeresia:])
             beam = [list(p) for _,p in kandidatet[:gjeresia]]
+            # Ruaj një strukturë të plotë edhe kur kërkimi ndalet në nivel pjesor.
+            # Ky kontroll nuk heq asnjë prefiks nga kërkimi.
+            for prefiksi in beam:
+                if time.perf_counter()-fillimi >= sekonda:
+                    perfundoi = False
+                    r.arsyeja = 'U arrit koha.'
+                    break
+                plote = ploteso_drejt(prefiksi, n)
+                if plote is not None:
+                    r.plotesime_te_vleresuara += 1
+                    e = energjia(sekuenca, plote, pesha)
+                    if e < e_mire:
+                        me_e_mira, e_mire = plote, e
+                        r.tentativa_me_e_mire = r.gjeneruar
+                        r.koha_me_e_mire = time.perf_counter()-fillimi
+                        r.historia.append((r.gjeneruar, e_mire))
+                        r.rezerve = len(prefiksi) < n
+            if not perfundoi:
+                break
             if not beam:
                 break
-        r.arsyeja = 'Kërkimi përfundoi.' if perfundoi else 'U arrit koha ose buxheti.'
+        if perfundoi:
+            r.arsyeja = 'Kërkimi përfundoi.'
     else:
         r.arsyeja = 'Zinxhir i shkurtër.'
     r.pikat, r.energjia = me_e_mira, e_mire
