@@ -1,0 +1,24 @@
+{
+  "python": "3.14.4",
+  "platforma": "Windows-11-10.0.26200-SP0",
+  "gjatesite": [
+    6,
+    10,
+    18,
+    30,
+    60,
+    100
+  ],
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "kandidate": 3000,
+  "sekonda": 1.0,
+  "beam_width": 20,
+  "matja_memories": "tracemalloc, proces i veçantë, i njëjti seed",
+  "konvergjenca": "pas ndalimit mbahet energjia finale; boshti është kandidatët, jo koha"
+}

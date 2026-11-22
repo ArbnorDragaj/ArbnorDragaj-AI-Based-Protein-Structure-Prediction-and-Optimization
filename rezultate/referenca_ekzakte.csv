@@ -1,0 +1,19 @@
+﻿familja,gjatesia,algoritmi,energjia,optimumi,hendeku,struktura_valide,hequr_globale,pruning_global_perqind
+hidrofobike,4,Simulated Annealing,-1,-1,0,25,,
+hidrofobike,4,Beam Search,-1,-1,0,25,0,0.0
+hidrofobike,6,Simulated Annealing,-2,-2,0,589,,
+hidrofobike,6,Beam Search,-2,-2,0,589,497,84.38030560271646
+hidrofobike,8,Simulated Annealing,-5,-5,0,13565,,
+hidrofobike,8,Beam Search,-5,-5,0,13565,13479,99.36601548101733
+përzier,4,Simulated Annealing,0,0,0,25,,
+përzier,4,Beam Search,0,0,0,25,0,0.0
+përzier,6,Simulated Annealing,-1,-1,0,589,,
+përzier,6,Beam Search,-1,-1,0,589,501,85.05942275042445
+përzier,8,Simulated Annealing,-3,-3,0,13565,,
+përzier,8,Beam Search,-3,-3,0,13565,13470,99.29966826391448
+polare,4,Simulated Annealing,0,0,0,25,,
+polare,4,Beam Search,0,0,0,25,0,0.0
+polare,6,Simulated Annealing,0,0,0,589,,
+polare,6,Beam Search,0,0,0,589,491,83.3616298811545
+polare,8,Simulated Annealing,0,0,0,13565,,
+polare,8,Beam Search,0,0,0,13565,13468,99.28492443789163
