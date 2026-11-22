@@ -14,6 +14,10 @@ GRAFIKET = {
     'Memoria Python': 'memoria_kib.png',
     'Kandidatët': 'kandidate.png',
     'Konvergjenca': 'konvergjenca.png',
+    'Pruning lokal': 'pruning_lokal_perqind.png',
+    'Referenca ekzakte': 'referenca_ekzakte.png',
+    'Pruning global ekzakt': 'pruning_global.png',
+    'Gjerësia Beam': 'beam_width.png',
 }
 
 SHPJEGIMET = {
@@ -21,7 +25,11 @@ SHPJEGIMET = {
     'Koha': 'Koha e ekzekutimit në sekonda sipas gjatësisë së sekuencës.',
     'Memoria Python': 'Kulmi i alokimeve Python, matur veçmas me tracemalloc; jo RAM-i i gjithë procesit.',
     'Kandidatët': 'Numri i kandidatëve të gjeneruar; përfshin kandidatët validë dhe invalidë.',
-    'Konvergjenca': 'Energjia më e mirë kundrejt kandidatëve, për sekuencën e përzier me gjatësi 18.',
+    'Konvergjenca': 'Mesatarja e energjisë më të mirë për çdo gjatësi dhe familje. Pas ndalimit mbahet energjia finale.',
+    'Pruning lokal': 'Kandidatët validë të hequr nga gjerësia Beam / të gjithë kandidatët validë të gjeneruar.',
+    'Referenca ekzakte': 'Diferenca nga optimumi i numëruar plotësisht për gjatësi 4, 6 dhe 8. Zero do të thotë optimal.',
+    'Pruning global ekzakt': 'Pjesa e strukturave valide që hiqet nga zgjerimi Beam përmes prefikseve të hequra, n ≤ 8.',
+    'Gjerësia Beam': 'Efekti i Beam width në energji dhe kohë, me të njëjtin buxhet. B më i madh nuk garanton energji më të mirë.',
 }
 
 

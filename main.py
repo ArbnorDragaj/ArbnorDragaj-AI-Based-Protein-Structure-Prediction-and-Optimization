@@ -37,8 +37,16 @@ class Aplikacioni:
         self.rezultatet = []
         self.zoom = 1.0
         self.fushat = {}
-        majtas = ttk.Frame(root, padding=(20, 18), style='Anash.TFrame')
-        majtas.pack(side='left', fill='y')
+        anash = ttk.Frame(root)
+        anash.pack(side='left', fill='y')
+        paneli = tk.Canvas(anash, width=275, background='#132d3a', highlightthickness=0)
+        levizja = ttk.Scrollbar(anash, orient='vertical', command=paneli.yview)
+        levizja.pack(side='right', fill='y')
+        paneli.pack(side='left', fill='y')
+        paneli.configure(yscrollcommand=levizja.set)
+        majtas = ttk.Frame(paneli, padding=(20, 18), style='Anash.TFrame')
+        paneli.create_window((0, 0), window=majtas, anchor='nw')
+        majtas.bind('<Configure>', lambda event: paneli.configure(scrollregion=paneli.bbox('all')))
         djathtas = ttk.Frame(root, padding=(18, 14), style='Pune.TFrame')
         djathtas.pack(side='left', fill='both', expand=True)
         ttk.Label(majtas, text='Proteina 3D', style='Titull.TLabel').pack(anchor='w')
@@ -121,8 +129,9 @@ class Aplikacioni:
                     perqindja = 100*r.hequr/r.valide if r.valide else 0
                     self.teksti.insert('end', f'{r.algoritmi}: E={r.energjia:g} | koha={r.koha:.4f}s | memoria={m["bajte"]/1024:.1f} KiB\n')
                     self.teksti.insert('end', f'  Kontakte H–H jo radhazi: {kontaktet(r.sekuenca, r.pikat)}\n')
+                    self.teksti.insert('end', f'  Vlerësime plotësimi: {r.plotesime_te_vleresuara}; kandidatë + plotësime: {r.gjeneruar+r.plotesime_te_vleresuara}\n')
                     self.teksti.insert('end', f'  Kandidatë: {r.gjeneruar}; validë: {r.valide}; invalidë: {r.invalide}; hequr nga Beam: {r.hequr} ({perqindja:.1f}% e validëve)\n')
-                    self.teksti.insert('end', f'  E vlefshme: {"Po" if valide(r.pikat,len(r.sekuenca)) else "Jo"}; tentativa më e mirë: {r.tentativa_me_e_mire}; rezervë: {"Po" if r.rezerve else "Jo"}; matja e memories: {m["kandidate"]} kandidatë.\n')
+                    self.teksti.insert('end', f'  E vlefshme: {"Po" if valide(r.pikat,len(r.sekuenca)) else "Jo"}; tentativa më e mirë: {r.tentativa_me_e_mire}; plotësim rezervë: {"Po" if r.rezerve else "Jo"}; matja e memories: {m["kandidate"]} kandidatë.\n')
                     self.teksti.insert('end', f'  Koha e rezultatit më të mirë: {r.koha_me_e_mire:.4f} s; ndalimi: {r.arsyeja}\n')
                 self.teksti.insert('end', 'Memoria matet veçmas me tracemalloc; numri i kandidatëve mund të ndryshojë nga kufiri kohor.\n')
                 self.vizato(True)

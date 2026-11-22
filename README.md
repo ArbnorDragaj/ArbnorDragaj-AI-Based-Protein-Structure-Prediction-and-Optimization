@@ -90,7 +90,7 @@ Nëse mungon Tkinter, instalojeni nga paketat e sistemit për shpërndarjen tuaj
 
 Zmadhimi ndryshon vetëm kamerën; koordinatat, lidhjet dhe energjia e proteinës mbeten të njëjta. Boshtet X, Y, Z dhe rrjeta koordinative janë të dukshme. Rrota e mausit lejon zmadhim nga 0.6 deri në 1.8 herë kundrejt pamjes fillestare.
 
-Butoni **Grafikët e eksperimenteve** hap një dritare ku mund të zgjedhësh energjinë, kohën, memorien Python, kandidatët ose konvergjencën. Grafikët lexohen nga skedarët PNG në `rezultate/`; janë rezultate të eksperimenteve të ruajtura, jo të simulimit aktual. Për t'i përditësuar, ekzekuto `eksperimente.py` dhe hape përsëri dritaren e grafikëve. Nëse mungojnë të gjithë grafikët, aplikacioni shfaq udhëzimin për krijimin e tyre.
+Butoni **Grafikët e eksperimenteve** hap një dritare ku mund të zgjedhësh energjinë, kohën, memorien Python, kandidatët ose konvergjencën. Grafikët lexohen nga skedarët PNG në `rezultate/`; janë rezultate të eksperimenteve të ruajtura, jo të simulimit aktual. Për t'i përditësuar, ekzekuto `eksperimente.py` dhe hape përsëri dritaren e grafikëve. Me `eksperimente.py --vetem-grafiket` rivizaton grafikët nga të dhënat e ruajtura pa përsëritur matjet. Nëse mungojnë të gjithë grafikët, aplikacioni shfaq udhëzimin për krijimin e tyre.
 
 Zgjedhësi ndryshon strukturën e shfaqur; nuk e nis algoritmin veçmas. Grafiku paraqet rezultatin përfundimtar, jo çdo lëvizje gjatë kërkimit.
 
@@ -137,7 +137,7 @@ Kjo qasje bën **përmirësim lokal** dhe pranimi i disa përkeqësimeve mund ta
 
 Ndërton zinxhirin hap pas hapi. Aminoacidi i parë vendoset në origjinë dhe lidhja e parë fiksohet në drejtimin +x për të shmangur disa variante simetrike. Në çdo nivel shqyrtohen deri në gjashtë drejtimet e rrjetës, refuzohen pozitat e zëna dhe ruhen maksimumi **B** prefikset më të mira.
 
-Nëse buxheti mbaron para se të gjendet një strukturë e plotë, programi kthen zinxhirin e drejtë të vlefshëm si **rezervë** dhe e shënon këtë në rezultat. Energjia e prefiksit nuk garanton cilësinë e strukturës përfundimtare.
+Pas çdo niveli të përfunduar, për prefikset e mbajtura provohen drejtimet e rrjetës deri te bishti i parë i drejtë valid. Një plotësim valid mund të përmirësojë zgjidhjen e plotë të ruajtur edhe para fundit të kërkimit. Ky kontroll nuk heq prefikse kur nuk gjen bisht të drejtë. Në mungesë të një zgjidhjeje më të mirë ruhet zinxhiri fillestar valid. Rezultati i marrë përmes plotësimit shënohet si **plotësim rezervë**. Energjia e prefiksit nuk garanton cilësinë e strukturës përfundimtare.
 
 ### Krahasimi
 
@@ -145,7 +145,9 @@ SA propozon struktura të plota dhe përdor rastësi; Beam zgjeron prefikse dhe 
 
 ## Matjet dhe rezultatet
 
-Për secilin algoritëm, dritarja shfaq energjinë, kohën, memorien e gjurmuar, numrin e kandidatëve të gjeneruar, validë dhe invalidë, vlefshmërinë, kohën dhe tentativën kur u gjet rezultati më i mirë, arsyen e ndalimit dhe përdorimin e rezervës. Nëse struktura fillestare mbetet më e mira, koha dhe tentativa janë zero.
+Paneli anësor ka shirit vertikal lëvizjeje, që kontrollet të arrihen edhe në dritaren minimale.
+
+Për secilin algoritëm, dritarja shfaq energjinë, kohën, memorien e gjurmuar, numrin e kandidatëve të gjeneruar, validë dhe invalidë, vlefshmërinë, kohën dhe tentativën kur u gjet rezultati më i mirë, arsyen e ndalimit dhe përdorimin e rezervës. Nëse struktura fillestare mbetet më e mira, koha dhe tentativa janë zero. Buxheti kufizon propozimet e kërkimit. Vlerësimet shtesë të plotësimit Beam dhe shuma kandidatë + plotësime shfaqen veçmas; koha përfshin edhe plotësimet.
 
 Për Beam shfaqet edhe numri i kandidatëve validë të hequr nga gjerësia Beam:
 
@@ -153,7 +155,7 @@ Për Beam shfaqet edhe numri i kandidatëve validë të hequr nga gjerësia Beam
 Pruning (%) = 100 × kandidatët e hequr nga Beam / kandidatët validë
 ```
 
-Nëse nuk ka kandidatë validë, shfaqet 0%. Kjo përqindje lidhet me kandidatët **e gjeneruar**, jo me të gjithë hapësirën teorike të strukturave, e cila nuk është numëruar.
+Nëse nuk ka kandidatë validë, shfaqet 0%. Për energjinë, një tejkalim numerik refuzohet me mesazh gabimi në vend të kthimit të inf/NaN. Kjo përqindje lidhet me kandidatët **e gjeneruar**, jo me të gjithë hapësirën teorike të strukturave, e cila nuk është numëruar.
 
 Koha kryesore matet me `time.perf_counter()` pa vizatimin dhe pa `tracemalloc`. Memoria matet në një **proces të veçantë**, duke riekzekutuar algoritmin me `tracemalloc`. Ajo është kulmi i alokimeve Python të gjurmuara, jo RSS ose memoria totale e procesit. Meqë matja është ekzekutim tjetër dhe kufiri kohor ende zbatohet, numri i kandidatëve mund të ndryshojë; ai shfaqet veçmas.
 
@@ -171,15 +173,24 @@ Në Linux:
 .venv/bin/python eksperimente.py
 ```
 
-Skripti përdor gjatësi **6, 10, 14 dhe 18** dhe tri familje sekuencash: hidrofobike, të përziera dhe polare. Për çdo rast ekzekuton SA me seed-et 1, 2 dhe 3, si dhe një herë Beam Search: gjithsej **48 ekzekutime**. Parametrat janë pesha 1, maksimumi 3000 kandidatë, kufiri 2 sekonda dhe gjerësia Beam 20. Matja e veçantë e memories për SA përdor seed 42.
+Seria përdor gjatësi **6, 10, 18, 30, 60 dhe 100** dhe tri familje: hidrofobike, të përziera dhe polare. SA përdor pesë seed-e (1–5); Beam përsëritet pesë herë për matjen e ndryshimit kohor. Gjithsej **180 ekzekutime** me peshë 1, buxhet 3000, kufi 1 sekondë për algoritëm dhe Beam width 20. Rendi SA/Beam alternohet. Memoria riekzekutohet në proces të veçantë për çdo matje, me të njëjtin seed; mbetet matje e veçantë dhe mund të ketë numër tjetër kandidatëve për shkak të kufirit kohor.
 
-Rezultatet e ruajtura janë:
+- `rezultatet.csv`: matjet individuale, seed-et, ndalimi, plotësimi rezervë dhe numëruesit.
+- `permbledhja.csv`: mesatarja dhe devijimi standard i mostrës për pesë përsëritjet.
+- `historite.json`: të 180 historitë dhe koordinatat, të verifikueshme veçmas.
+- `konfigurimi.json`: konfigurimi dhe mjedisi i ekzekutimit.
+- `referenca_ekzakte.csv`: optimumi dhe hendeku i energjisë për gjatësi 4, 6, 8.
+- `beam_width.csv`: 18 prova me B=5,20,60 dhe gjatësi 30,60.
 
-- [Tabela CSV](rezultate/rezultatet.csv) — sekuencat, seed-et dhe matjet individuale.
-- [Energjia](rezultate/energjia.png), [koha](rezultate/koha_s.png), [memoria](rezultate/memoria_kib.png) dhe [kandidatët](rezultate/kandidate.png) kundrejt gjatësisë.
-- [Konvergjenca](rezultate/konvergjenca.png) — energjia më e mirë kundrejt numrit të kandidatëve për një rast të përzier me gjatësi 18.
+Nëntë grafikët përfshijnë energjinë, kohën, memorien, kandidatët, konvergjencën për të gjitha familjet/gjatësitë, pruning-un lokal, referencën ekzakte, pruning-un global ekzakt dhe ndikimin e Beam width. Vijat e gabimit tregojnë ±1 devijim standard, jo interval besueshmërie. Pas ndalimit, grafiku i konvergjencës mban energjinë finale; nuk simulon punë shtesë. Kandidatët SA dhe Beam nuk janë njësi pune të barasvlershme.
 
-**Riekzekutimi i eksperimenteve i zëvendëson skedarët e gjeneruar në `rezultate/`.** Koha e matur ndikohet nga pajisja dhe ngarkesa e saj. Përmbledhja e serisë së ruajtur dhe interpretimi i saj gjenden te [RAPORTI.md](RAPORTI.md).
+**Pruning global:** `referenca.py` numëron të gjitha strukturat valide me origjinën dhe lidhjen e parë të fiksuar në +x, deri në gjatësi 8. Numërohen strukturat që bien nën prefikset e hequra para nivelit final. Kjo mat strukturat e përjashtuara nga zgjerimi Beam; disa mund të jenë vlerësuar si plotësime rezervë. Nuk ngatërrohet me përqindjen lokale të kandidatëve. Për SA nuk raportohet përqindje globale pruning-u. Kufiri 8 është vetëm për referencën ekzakte, jo për algoritmet kryesore.
+
+**Riekzekutimi i eksperimenteve zëvendëson skedarët e gjeneruar në `rezultate/`.** Për verifikimin e të dhënave të ruajtura:
+
+```powershell
+.\.venv\Scripts\python.exe verifiko_rezultatet.py
+```
 
 ## Testet
 
@@ -205,7 +216,10 @@ Testet kontrollojnë inputin, vlefshmërinë, përplasjet, lidhjet e prishura, e
 ├── proteina.py         # Modeli HP, energjia dhe dy algoritmet
 ├── matja.py            # Matja e memories në proces të veçantë
 ├── eksperimente.py     # Eksperimentet dhe grafikët
-├── test_proteina.py    # Testet me unittest
+├── test_proteina.py    # Testet bazë me unittest
+├── test_saktesia.py    # Kontrollet algoritmike kundrejt enumerimit
+├── referenca.py        # Optimumi dhe pruning-u global për raste të vogla
+├── verifiko_rezultatet.py # Verifikimi i të dhënave dhe strukturave të ruajtura
 ├── requirements.txt    # Varësia Matplotlib
 ├── RAPORTI.md          # Analiza dhe interpretimi
 └── rezultate/          # Tabela CSV dhe grafikët e ruajtur

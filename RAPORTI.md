@@ -1,54 +1,72 @@
 # Raporti: optimizimi i strukturës së proteinës
 
-## Problemi dhe modeli
+## Modeli dhe objektivi
 
-Një sekuencë aminoacidesh mund të ketë shumë konfigurime. Këtu çdo aminoacid është një pikë me koordinata të plota `(x,y,z)`. Pozitat duhet të jenë të ndryshme dhe pikat radhazi duhet të kenë distancë Manhattan 1. Koordinatat negative lejohen; renditja ruhet. Një listë mban renditjen dhe një `set` ose `dict` kontrollon pozitat.
+Proteina është listë e renditur koordinatash të plota (x,y,z) në rrjetë kubike. Çdo pozicion duhet unik dhe dy aminoacide radhazi duhet të kenë distancë Manhattan 1. Struktura invalide refuzohet. Modeli HP është edukativ: A,V,I,L,M,F,W,Y,C klasifikohen H; të tjerat P. Histidina, shkronja H në sekuencë, këtu është P. Nuk modelohen atome, tretës ose forca reale fizike.
 
-Përdorim modelin edukativ HP: A, V, I, L, M, F, W, Y, C janë H; të tjerat janë P. Shkronja **H** në sekuencën origjinale është histidinë dhe klasifikohet P në këtë ndarje të thjeshtuar. H/P nuk përfaqëson të gjitha vetitë reale kimike.
-
-## Funksioni i energjisë
-
-`E = -pesha × numri i kontakteve H–H`.
-
-Kontakt është një çift H–H me distancë Manhattan 1 që nuk janë radhazi në zinxhir. Çdo çift numërohet një herë. Për shembull katër H në katror kanë një kontakt shtesë dhe, me peshë 1, energjinë -1. Zinxhiri i drejtë ka energji 0. Synimi është energji sa më e ulët. Strukturat me përplasje ose lidhje të prishura refuzohen, pa penalitet numerik.
+E = −pesha × numri i kontakteve H–H jo radhazi. Çdo çift numërohet një herë. Për katër H në katror E=−1 me peshë 1; për një zinxhir të drejtë E=0. Pesha duhet pozitive dhe e fundme. Edhe rezultati i shumëzimit kontrollohet: overflow refuzohet me ValueError, pa kthyer inf/NaN. Energjia dhe algoritmet pranojnë të njëjtin normalizim të sekuencës.
 
 ## Simulated Annealing
 
-Fillohet nga zinxhir i drejtë. Në çdo tentativë zgjidhet një pivot dhe bishti rrotullohet me 90° rreth njërit bosht. Kandidati i pavlefshëm refuzohet. Për një kandidat valid llogaritet ndryshimi i energjisë: nëse është më i mirë ose i barabartë pranohet; nëse është më i keq mund të pranohet me probabilitet `exp(-delta/T)`. Temperatura ulet gradualisht. Mbajmë veçmas strukturën aktuale dhe më të mirën. Kjo lëvizje është përmirësimi lokal; pranimi i përkohshëm i përkeqësimeve ndihmon largimin nga disa minimume lokale.
+Nis nga zinxhir i drejtë. Rrotullon bishtin me ±90° rreth njërit bosht në një pivot të brendshëm. Kontrollon vlefshmërinë para energjisë. Pranon përmirësime dhe barazime; përkeqësimet pranohen me exp(−delta/T). T nis 2 dhe ulet me faktor 0.995 deri në dyshemenë 1e−9. Struktura aktuale dhe më e mira ruhen veçmas. Rrotullimet janë mekanizmi i përmirësimit lokal. SA nuk garanton optimum global dhe nuk pretendon se ka vizituar çdo strukturë. Pranimi varet edhe nga shkalla e peshës kundrejt temperaturës.
 
-## Beam Search
+## Beam Search dhe plotësimi
 
-Fillojmë në origjinë dhe e fiksojmë lidhjen e parë në drejtimin +x: kjo shmang variante të njëjta me rrotullim global. Në secilin hap zgjerojmë prefikset në gjashtë drejtime, refuzojmë përplasjet, rendisim sipas energjisë dhe koordinatave, pastaj ruajmë maksimumi B prefikse. Energjia e prefiksit është heuristikë, jo garanci për rezultat të mirë final. Nëse koha ose buxheti mbaron para një strukture të plotë, kthehet zinxhiri i drejtë valid si rezervë; ai shënohet qartë.
+Origjina fiksohet dhe lidhja e parë vendoset në +x, duke hequr një pjesë të simetrive globale. Prefikset zgjerohen në gjashtë drejtime. Përplasjet refuzohen; kandidatët renditen sipas energjisë së prefiksit dhe koordinatave, pastaj mbahen maksimumi B. Barazimet kanë bias gjeometrik nga koordinatat; kjo është heuristikë dhe jo provë optimaliteti.
 
-Simulated Annealing ndryshon një strukturë të plotë; Beam Search ndërton shumë alternativa pjesore. I zgjedhim sepse tregojnë dy mënyra të ndryshme kërkimi dhe përmbushin kërkesën për teknikë të avancuar. Asnjëri nuk garanton optimum global.
+Pas një niveli të përfunduar, çdo prefiks i mbajtur provohet për plotësim duke kontrolluar drejtimet me radhë deri te bishti i parë i drejtë valid. Plotësimi pranohet vetëm pa mbivendosje dhe vetëm nëse përmirëson energjinë e zgjidhjes së plotë të ruajtur. Nëse nuk gjendet bisht i drejtë, prefiksi mbetet në kërkim: nuk pretendojmë se ai është i pazgjidhshëm. Kur ka strukturë të plotë të gjeneruar në nivelin final, edhe ajo krahasohet me zgjidhjen më të mirë.
 
-## Reduktimi dhe kompleksiteti
+Kështu kufiri kohor ose buxheti nuk e detyron algoritmin ta hedhë një zgjidhje të mirë të plotë të gjetur përmes plotësimit. Zinxhiri fillestar mbetet rezervë valide. Flamuri `rezerve` tregon prejardhjen nga inicializimi/plotësimi, jo strukturë të paplotë. Arsyeja e ndalimit dallon buxhetin, kohën dhe përfundimin e kërkimit.
 
-Refuzimi i përplasjeve heq kandidatë invalidë. Beam ruan vetëm B alternativa në çdo nivel, ndërsa lidhja e parë fiksohet për simetri. Përqindja e shfaqur është `100 × hequr nga Beam / validë të gjeneruar`, ose 0 kur nuk ka validë; **nuk është përqindje e gjithë hapësirës teorike**, e cila nuk është numëruar. SA nuk përdor të njëjtin pruning si Beam.
+Numëruesi `gjeneruar` mbulon propozimet SA ose zgjerimet Beam dhe respekton buxhetin. Vlerësimet shtesë të plotësimit Beam ruhen veçmas te `plotesime_te_vleresuara`; shuma e tyre paraqitet në GUI/CSV. Buxheti kufizon propozimet, ndërsa koha përfshin edhe plotësimet. Kandidatët mund të përsëriten; këta janë numërues tentativash, jo numër strukturash unike.
 
-Për n aminoacide, I tentativa dhe gjerësi B: kontrolli i vlefshmërisë, kopjimi dhe rrotullimi kushtojnë O(n). Energjia kontrollon gjashtë fqinjë për pikë me `dict`: O(n) mesatarisht, duke supozuar operacione hash mesatarisht O(1). SA kushton O(I·n) kohë dhe O(n+I) memorie në rastin më të keq, përfshirë historinë e përmirësimeve. Beam gjeneron deri në 6B zgjerime për nivel dhe i rendit: duke llogaritur se krahasimi i koordinatave në barazime mund të kushtojë O(n), një kufi i sipërm është O(B·n²·log(B+1)) kohë dhe O(B·n+I) memorie me historinë. Koha mund të jetë më e vogël kur mbaron buxheti. Kërkimi i plotë rritet në mënyrë eksponenciale; B më i madh rrit numrin e alternativave, por edhe kohën dhe memorien.
+## Reduktimi dhe pruning-u
 
-## Matjet dhe eksperimentet
+Pruning lokal = 100 × prefikse të hequra nga gjerësia Beam / kandidatë validë të gjeneruar. Nuk është përqindje e gjithë hapësirës teorike. SA nuk përdor këtë lloj pruning-u.
 
-Koha e algoritmit matet me `perf_counter` pa vizatim ose `tracemalloc`. Memoria matet me `tracemalloc` në proces të veçantë, duke riekzekutuar algoritmin; është kulmi i alokimeve Python të gjurmuara, jo RSS apo gjithë memoria e procesit. Kufiri kohor dhe ngadalësimi i matjes mund të ndryshojnë numrin e kandidatëve: edhe ai numër ruhet në tabelë.
+Për n=4,6,8, referenca numëron të gjitha strukturat valide me origjinën dhe lidhjen e parë +x: 25, 589 dhe 13565. Këto vlera përfshijnë ende simetri të tjera dhe ky univers thuhet shprehimisht. Prefikset e hequra para nivelit final përfaqësojnë nënbashkësi të shkëputura të strukturave përfundimtare. Numërojmë ekzakt sa struktura bien nën këto prefikse. Heqjet në nivelin final përjashtohen nga kjo metrikë, sepse ato struktura tashmë janë zgjeruar dhe vlerësuar.
 
-Eksperimenti përdor gjatësitë 6, 10, 14, 18 dhe tre familje: hidrofobike, të përziera dhe polare. Për çdo rast SA ekzekutohet me seed 1, 2 dhe 3; Beam është determinist dhe ekzekutohet një herë. Parametrat janë pesha 1, maksimumi 3000 kandidatë, 2 sekonda dhe B=20. Matja e veçantë e memories për SA përdor seed 42 dhe i njëjti rezultat memorieje shfaqet në tre rreshtat SA të atij rasti. Buxhet i barabartë kandidatësh nuk do të thotë punë e barabartë: SA gjeneron struktura të plota, Beam zgjerime prefiksesh.
+Kontrollojmë identitetin: struktura totale = struktura nën prefikset e hequra + struktura të plota të gjeneruara nga zgjerimi Beam, kur kërkimi përfundon. Kjo mat heqjen nga zgjerimi, jo domosdoshmërisht mosvlerësimin e energjisë: disa struktura mund të jenë provuar si plotësime. Për gjatësi më të mëdha nuk shpikim përqindje globale. Kufiri 8 vlen vetëm për enumerimin diagnostik, jo për algoritmet kryesore.
 
-Të dhënat reale janë në [rezultatet.csv](rezultate/rezultatet.csv), ndërsa grafikët tregojnë energjinë, kohën, memorien, kandidatët dhe konvergjencën. Për familjen vetëm P, E=0 është kontroll i modelit. Koha e matur ndikohet nga kompjuteri dhe ngarkesa e tij; ajo nuk provon kompleksitetin asimptotik ose një fitues të përgjithshëm.
+## Referenca e pavarur dhe cilësia
 
-Përmbledhje e matur për n=18, Python 3.14.4 në Windows 11; koha SA është mesatare e tri seed-eve, ndërsa Beam është një ekzekutim. Gjatë serisë në kompjuter kishte edhe procese të tjera aktive.
+`referenca.py` përdor enumerim të plotë dhe llogarit energjinë duke kontrolluar drejtpërdrejt të gjitha çiftet jo radhazi, pa funksionin e energjisë/kontakteve të algoritmeve. Për rastet e vogla raportohet hendeku E − optimumi; zero do të thotë optimum i gjetur për modelin. Asnjë rezultat nuk lejohet të ketë energji më të ulët se optimumi ekzakt.
 
-| Familja | Algoritmi | E më e mirë | E mesatare | Koha mesatare (s) | Peak Python (KiB) |
-|---|---|---:|---:|---:|---:|
-| Hidrofobike | SA | -13 | -11.67 | 0.3699 | 10.5 |
-| Hidrofobike | Beam | -16 | -16 | 0.0567 | 185.5 |
-| Përzier | SA | -5 | -5 | 0.4358 | 10.5 |
-| Përzier | Beam | -6 | -6 | 0.0454 | 203.5 |
-| Polare | SA | 0 | 0 | 0.3691 | 9.0 |
-| Polare | Beam | 0 | 0 | 0.0162 | 215.5 |
+Testet kontrollojnë edhe Beam me gjerësi mjaft të madhe që të mos heqë kandidatë: në raste të vogla ai duhet të përputhet me optimumin. Për gjatësi të mëdha krahasimi mbetet relativ mes heuristikave; nuk pretendohet cilësi biologjike ose optimum i provuar.
 
-Në këto raste Beam gjeti energji më të ulët për familjet hidrofobike dhe të përziera, por përdori më shumë memorie të gjurmuar. Kjo nuk provon se Beam është gjithmonë më i mirë. Të 48 strukturat u kontrolluan si valide gjatë eksperimentit.
+## Kompleksiteti
 
-## Kufizimet
+Me n aminoacide, I propozime dhe gjerësi B: kopjimi, rrotullimi, vlefshmëria dhe energjia kushtojnë O(n) mesatarisht, duke supozuar hash O(1) mesatarisht. Numrat e koordinatave trajtohen sipas modelit të zakonshëm të kostos së operacioneve.
 
-Modeli nuk përmban atome, tretës ose forca reale fizike. Rrjeta është e thjeshtuar. Energjia e prefiksit nuk garanton se Beam gjen strukturën më të mirë. Rezultati rezervë mund të ketë energji 0 nëse buxheti është tepër i vogël. Matja e memories është ekzekutim i veçantë dhe nuk përfshin çdo alokim native. Kufiri kohor kontrollohet mes hapave dhe mund të tejkalohet pak. Hibridi mbetet opsional dhe nuk është implementuar.
+SA: O(I·n) kohë, O(n+I) memorie për strukturat dhe historinë. Beam: deri 6B kandidatë për nivel, O(n) për kandidat dhe O(n) krahasim koordinatash në barazime gjatë renditjes; kufi i sipërm O(B·n²·log(B+1)) kohë. Plotësimet me deri gjashtë bishta kanë O(n) kosto për prefiks dhe mbeten brenda këtij kufiri. Memoria bazë O(B·n+I), përfshirë historinë. Me gjurmimin diagnostik të prefikseve të hequra mund të shtohet O(I·n) memorie; ai është i çaktivizuar në matjet kryesore. Enumerimi i plotë mbetet eksponencial.
+
+Buxheti dhe koha kontrollohen mes hapave, jo gjatë çdo operacioni; inicializimi, renditja, një vlerësim apo plotësim mund ta tejkalojë afatin. Kjo nuk është garanci real-time. Matjet empirike nuk provojnë kompleksitetin asimptotik.
+
+## Protokolli eksperimental
+
+Gjatësitë: 6,10,18,30,60,100. Familjet: hidrofobike, të përziera dhe polare. Pesë seed-e SA (1–5) dhe pesë përsëritje Beam për rast: 180 matje. Parametrat: pesha 1, buxheti 3000 propozime, koha 1 s për algoritëm, B=20. Rendi i algoritmeve alternohet. Beam është determinist kur ndërpritet nga i njëjti buxhet; koha dhe ndërprerja kohore mund të ndryshojnë mes përsëritjeve.
+
+Koha matet pa vizatim dhe pa tracemalloc. Për çdo matje, memoria riekzekutohet në proces të veçantë me të njëjtin seed dhe parametra. Është peak i alokimeve Python të gjurmuara, jo RSS ose RAM i plotë. Ngadalësimi i tracemalloc dhe kufiri kohor mund të ndryshojnë numrin e kandidatëve dhe energjinë; të dyja ruhen veçmas. Përsëritjet Beam nuk janë raste të pavarura rastësore të zgjidhjes: shërbejnë për ndryshueshmërinë e performancës.
+
+`permbledhja.csv` dhe vijat e gabimit japin mesatare ±1 devijim standard të mostrës, jo interval besueshmërie. Konvergjenca jep energjinë më të mirë sipas kandidatëve, për çdo familje/gjatësi; pas ndalimit mbahet rezultati final. Për kohën e përmirësimit ruhet veçmas `koha_me_e_mire_s`. Një kandidat SA dhe një zgjerim Beam nuk janë e njëjta sasi pune.
+
+Eksperimenti i gjerësisë ka B=5,20,60, gjatësi 30,60 dhe tri përsëritje: 18 prova. B më i madh nuk garanton energji më të mirë brenda një buxheti të caktuar, sepse ndryshon shpërndarjen e punës mes gjerësisë dhe thellësisë. Familja polare me E=0 kontrollon funksionin e modelit; nuk dëshmon epërsi optimizimi.
+
+## Rezultatet e serisë aktuale, n=100
+
+Tabela gjenerohet nga të dhënat reale. Për interpretim përdoren bashkë energjia, koha, memoria dhe përdorimi i rezervës; nuk shpallet fitues universal.
+
+| Familja | Algoritmi | E më e mirë | E mesatare | Koha mesatare (s) | Peak Python mesatar (KiB) | Plotësime rezervë / 5 |
+|---|---|---:|---:|---:|---:|---:|
+| hidrofobike | SA | -66 | -60.00 | 0.6946 | 61.3 | 0 |
+| hidrofobike | Beam | -30 | -30.00 | 0.1784 | 294.7 | 5 |
+| përzier | SA | -27 | -23.40 | 0.5709 | 61.9 | 0 |
+| përzier | Beam | -14 | -14.00 | 0.1686 | 313.2 | 5 |
+| polare | SA | 0 | 0.00 | 0.7839 | 53.7 | 0 |
+| polare | Beam | 0 | 0.00 | 0.1368 | 319.6 | 5 |
+
+## Verifikimi dhe kufizimet
+
+`python -m unittest -v` ekzekuton kontrollet e modelit dhe algoritmeve. `python verifiko_rezultatet.py` kontrollon koordinatat dhe energjinë e 180 rezultateve me llogaritje të pavarur, numëruesit, historitë monotone, përmbledhjet statistikore, 18 referencat dhe praninë e grafikëve. Të dhënat e plota ruhen, jo vetëm imazhet.
+
+Këto kontrolle rrisin besueshmërinë, por nuk garantojnë mungesë absolute gabimesh. HP mbetet thjeshtim; SA/Beam nuk garantojnë optimum për rastet e përgjithshme. Kufizimet strukturore shtesë dhe hibridi janë opsionale në detyrë dhe nuk janë shtuar. Python dhe Matplotlib nuk zëvendësojnë algoritmet: kërkimi dhe modeli janë implementuar në projekt; Matplotlib vizaton.
