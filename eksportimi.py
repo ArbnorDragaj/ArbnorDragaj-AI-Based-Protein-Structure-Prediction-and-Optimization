@@ -1,10 +1,13 @@
 """Eksport i rezultateve pa ndryshuar strukturat e llogaritura."""
 import csv
 import io
+import json
+from dataclasses import asdict
+from datetime import datetime, timezone
 import os
 from pathlib import Path
 import tempfile
-from proteina import valide, sekuenca_e_sakte
+from proteina import valide, sekuenca_e_sakte, energjia
 
 
 def shkruaj_atomik(path, text):
@@ -42,3 +45,16 @@ def eksporto_koordinatat(path, results):
         for i,(aa,p) in enumerate(zip(r.sekuenca,r.pikat),1):
             writer.writerow((r.algoritmi,i,aa,*p))
     shkruaj_atomik(path, buffer.getvalue())
+
+
+def eksporto_json(path, results, config, memories=None):
+    kontrollo_rezultatet(results)
+    for r in results:
+        if r.energjia != energjia(r.sekuenca,r.pikat,config['pesha']):
+            raise ValueError('Energjia nuk përputhet me strukturën dhe peshën e ruajtur.')
+    payload = {'versioni':1, 'modeli':'HP në rrjetë kubike 3D',
+               'koha_eksportit_utc':datetime.now(timezone.utc).isoformat(),
+               'parametrat':config,'rezultatet':[asdict(r) for r in results],
+               'memoria_python':memories,
+               'shenim':'Model edukativ; memoria matet në ekzekutim të veçantë.'}
+    shkruaj_atomik(path,json.dumps(payload,ensure_ascii=False,indent=2,allow_nan=False))
