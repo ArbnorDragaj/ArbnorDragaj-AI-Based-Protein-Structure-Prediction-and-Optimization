@@ -101,7 +101,7 @@ class Aplikacioni:
                               padx=10, pady=9, highlightthickness=1, highlightbackground='#dce6e9')
         self.teksti.pack(fill='x')
         self.vizato(True)
-        root.after(100, self.kontrollo)
+        self.poll_id = root.after(100, self.kontrollo)
 
     def ndrysho_sekuencen(self, *_):
         self.burimi = None
@@ -195,7 +195,7 @@ class Aplikacioni:
                 self.vizato(True)
         except queue.Empty:
             pass
-        self.root.after(100, self.kontrollo)
+        self.poll_id = self.root.after(100, self.kontrollo)
 
     def zmadho(self, faktori):
         self.zoom = min(1.8, max(0.6, self.zoom * faktori))

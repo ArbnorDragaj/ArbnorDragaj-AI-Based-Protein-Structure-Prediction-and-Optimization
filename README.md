@@ -15,6 +15,7 @@ Struktura shfaqet në një dritare interaktive ku mund të rrotullohet me maus. 
 - [Algoritmet](#algoritmet)
 - [Matjet dhe rezultatet](#matjet-dhe-rezultatet)
 - [Eksperimentet dhe grafikët](#eksperimentet-dhe-grafikët)
+- [Sekuenca nga CSV / FASTA dhe dataset-e lokale](#sekuenca-nga-csv--fasta-dhe-dataset-e-lokale)
 - [Testet](#testet)
 - [Struktura e projektit](#struktura-e-projektit)
 - [Kufizimet](#kufizimet)
@@ -192,6 +193,24 @@ Nëntë grafikët përfshijnë energjinë, kohën, memorien, kandidatët, konver
 .\.venv\Scripts\python.exe verifiko_rezultatet.py
 ```
 
+## Sekuenca nga CSV / FASTA dhe dataset-e lokale
+
+**Importo CSV / FASTA** lejon zgjedhjen e një sekuence nga skedari lokal. Në CSV përdor një kolonë `sequence`, `seq` ose `sekuenca`; kolonat `id`, `pdb_id` ose `name` mund të japin identifikuesin. FASTA pranon titujt `>` dhe sekuenca në disa rreshta. Shkronjat e vogla normalizohen. Shkronjat jashtë 20 aminoacideve standarde, përfshirë X/B/Z, refuzohen pa u fshirë nga zinxhiri.
+
+Përzgjedhësi i GUI-së paraqet deri në 500 sekuencat e para dhe njofton kur ka më shumë. Ky është kufi i listës së përzgjedhjes, jo i gjatësisë së proteinës. Importimi nuk nis algoritmet automatikisht. Nëse e ndryshon sekuencën manualisht, lidhja me burimin e importuar hiqet.
+
+Për një seri eksperimentesh nga dataset-i i shkarkuar, përdor:
+
+```powershell
+.\.venv\Scripts\python.exe dataset.py dataset.csv --burimi "Emri dhe URL e dataset-it" --dalja rezultate_dataset_01 --numri 10 --seeds 1 2 3
+```
+
+Për një emër tjetër kolone përdor `--kolona emri_kolones`. Mund të caktosh `--pesha`, `--buxheti`, `--sekonda` dhe `--beam`. `--numri` zgjedh deri në N sekuencat e para; nuk shkurton aminoacidet. Dosja e daljes duhet të jetë e re. Ruhen CSV-ja e matjeve, JSON për strukturat/historitë, burimi i deklaruar, SHA-256 i skedarit dhe statusi i serisë. Matja e memories është ekzekutim i veçantë me seed-in përkatës. Beam ekzekutohet një herë për sekuencë në këtë mënyrë; kjo seri nuk zëvendëson pesë përsëritjet e protokollit kryesor.
+
+Kjo mund të përdoret me një CSV/FASTA të shkarkuar nga Kaggle ose burime të tjera. Projekti nuk shkarkon automatikisht dataset dhe nuk pretendon se testet sintetike janë të dhëna reale. Përdoruesi zgjedh dataset-in, dokumenton prejardhjen/lejen e përdorimit dhe siguron që kolona përmban sekuencën e duhur. Përdoren vetëm sekuencat; nuk matet saktësia kundrejt strukturave biologjike eksperimentale dhe nuk trajnohet model ML.
+
+**Eksporto rezultatet** ruan krahasimin e fundit si JSON me parametrat e përdorur, historitë, koordinatat dhe matjet e memories, ose si CSV vetëm me koordinatat. Ndryshimi i fushave pas ekzekutimit nuk ndryshon konfigurimin e rezultatit të eksportuar. **Konvergjenca e rezultatit** hap historitë e ekzekutimit të fundit, veçmas nga grafikët e serisë së eksperimenteve.
+
 ## Testet
 
 Në Windows:
@@ -213,11 +232,19 @@ Testet kontrollojnë inputin, vlefshmërinë, përplasjet, lidhjet e prishura, e
 ```text
 ├── main.py             # Ndërfaqja dhe pamja interaktive 3D
 ├── grafiket.py         # Shfaqja e grafikëve të ruajtur brenda aplikacionit
+├── te_dhenat.py        # Leximi i sekuencave CSV/FASTA
+├── importimi.py        # Zgjedhja e sekuencës nga GUI
+├── eksportimi.py       # Eksporti CSV/JSON i rezultateve
+├── dataset.py          # Eksperimente me skedar lokal dhe burim të deklaruar
 ├── proteina.py         # Modeli HP, energjia dhe dy algoritmet
 ├── matja.py            # Matja e memories në proces të veçantë
 ├── eksperimente.py     # Eksperimentet dhe grafikët
 ├── test_proteina.py    # Testet bazë me unittest
 ├── test_saktesia.py    # Kontrollet algoritmike kundrejt enumerimit
+├── test_gui.py         # Importi, eksporti dhe parametrat e ekzekutimit
+├── test_te_dhenat.py   # Formatet CSV/FASTA dhe inputet invalide
+├── test_eksportimi.py  # Koordinatat dhe integriteti i eksportit
+├── test_dataset.py     # Ekzekutimi dhe prejardhja e dataset-it
 ├── referenca.py        # Optimumi dhe pruning-u global për raste të vogla
 ├── verifiko_rezultatet.py # Verifikimi i të dhënave dhe strukturave të ruajtura
 ├── requirements.txt    # Varësia Matplotlib
