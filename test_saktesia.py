@@ -77,6 +77,10 @@ class TestSaktesia(unittest.TestCase):
         self.assertLessEqual(r.gjeneruar,200)
         self.assertEqual(r.gjeneruar,r.valide+r.invalide)
 
+    def test_gabimi_i_procesit_te_memories_shpjegohet(self):
+        with self.assertRaisesRegex(RuntimeError,'Pesha'):
+            mat_memorien('SA','AAAA',0,100,1,20)
+
 
 if __name__ == '__main__':
     unittest.main()
