@@ -10,6 +10,7 @@ from matplotlib.lines import Line2D
 from proteina import HIDROFOBIKE, sekuenca_e_sakte, simulated_annealing, beam_search, valide, kontaktet
 from matja import mat_memorien
 from grafiket import hap_grafiket
+from importimi import zgjidh_sekuencen
 
 class Aplikacioni:
     def __init__(self, root):
@@ -35,6 +36,7 @@ class Aplikacioni:
         stili.configure('Nendarje.TLabel', background='#eef3f6', foreground='#193744', font=('Segoe UI', 11, 'bold'))
         self.radha = queue.Queue()
         self.rezultatet = []
+        self.burimi = None
         self.zoom = 1.0
         self.fushat = {}
         anash = ttk.Frame(root)
@@ -59,7 +61,9 @@ class Aplikacioni:
             ttk.Entry(majtas, textvariable=var, width=27,
                       state='readonly' if key == 'gjatesia' else 'normal').pack(fill='x', pady=(3,8), ipady=1)
             self.fushat[key] = var
-        self.fushat['sekuenca'].trace_add('write', lambda *_: self.fushat['gjatesia'].set(str(len(self.fushat['sekuenca'].get().strip()))))
+        self.fushat['sekuenca'].trace_add('write', self.ndrysho_sekuencen)
+        self.importo_buton = ttk.Button(majtas, text='Importo CSV / FASTA', command=self.importo)
+        self.importo_buton.pack(fill='x', pady=4)
         self.buton = ttk.Button(majtas, text='Ekzekuto dhe krahaso', command=self.nis, style='Kryesor.TButton')
         self.buton.pack(fill='x', pady=(8, 6))
         self.zgjedhja = tk.StringVar(value='Simulated Annealing')
@@ -90,6 +94,21 @@ class Aplikacioni:
         self.vizato(True)
         root.after(100, self.kontrollo)
 
+    def ndrysho_sekuencen(self, *_):
+        self.burimi = None
+        self.fushat['gjatesia'].set(str(len(self.fushat['sekuenca'].get().strip())))
+
+    def importo(self):
+        try:
+            record = zgjidh_sekuencen(self.root)
+        except (OSError, ValueError, UnicodeError) as error:
+            messagebox.showerror('Importimi dështoi', str(error), parent=self.root)
+            return
+        if record:
+            self.fushat['sekuenca'].set(record['sekuenca'])
+            self.burimi = record
+            self.statusi.set(f'Importuar: {record["id"]}. Shtyp Ekzekuto.')
+
     def nis(self):
         try:
             s = sekuenca_e_sakte(self.fushat['sekuenca'].get())
@@ -101,7 +120,9 @@ class Aplikacioni:
         except ValueError as error:
             messagebox.showerror('Input i pavlefshëm', str(error), parent=self.root)
             return
-        self.fushat['sekuenca'].set(s)
+        if self.fushat['sekuenca'].get() != s:
+            self.fushat['sekuenca'].set(s)
+        self.importo_buton.config(state='disabled')
         self.buton.config(state='disabled')
         self.statusi.set('Duke llogaritur të dy algoritmet…')
         def puno():
@@ -118,6 +139,7 @@ class Aplikacioni:
         try:
             gabim, rezultatet, memoriet = self.radha.get_nowait()
             self.buton.config(state='normal')
+            self.importo_buton.config(state='normal')
             if gabim:
                 self.statusi.set('Gabim gjatë ekzekutimit.')
                 messagebox.showerror('Gabim', gabim, parent=self.root)
