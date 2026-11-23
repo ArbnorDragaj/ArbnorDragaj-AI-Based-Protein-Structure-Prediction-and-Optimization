@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from proteina import HIDROFOBIKE, sekuenca_e_sakte, simulated_annealing, beam_search, valide, kontaktet
 from matja import mat_memorien
-from grafiket import hap_grafiket
+from grafiket import hap_grafiket, hap_konvergjencen
 from importimi import zgjidh_sekuencen
 from eksportimi import eksporto_koordinatat, eksporto_json
 
@@ -81,6 +81,9 @@ class Aplikacioni:
         ttk.Button(majtas, text='Rivendos pamjen', command=lambda: self.vizato(True)).pack(fill='x', pady=8)
         ttk.Button(majtas, text='Grafikët e eksperimenteve',
                    command=lambda: hap_grafiket(self.root)).pack(fill='x', pady=(0, 5))
+        self.historia_buton = ttk.Button(majtas, text='Konvergjenca e rezultatit', state='disabled',
+                                        command=lambda: hap_konvergjencen(self.root,self.rezultatet))
+        self.historia_buton.pack(fill='x',pady=(0,5))
         ttk.Label(majtas, text='Mausi: rrotullo  ·  Rrota: zoom\nPortokalli: H  ·  Blu: P', style='NenTitull.TLabel', justify='left').pack(anchor='w', pady=5)
         self.statusi = tk.StringVar(value='Shkruaj sekuencën dhe shtyp Ekzekuto.')
         ttk.Label(majtas, textvariable=self.statusi, style='Gjendje.TLabel', wraplength=220).pack(anchor='w', pady=10)
@@ -177,6 +180,7 @@ class Aplikacioni:
                 self.konfigurimi = self.config_ne_pune
                 self.memoriet = memoriet
                 self.eksporto_buton.config(state='normal')
+                self.historia_buton.config(state='normal')
                 self.statusi.set('Përfundoi. Zgjidh algoritmin për të parë strukturën.')
                 self.teksti.delete('1.0', 'end')
                 for r,m in zip(rezultatet, memoriet):

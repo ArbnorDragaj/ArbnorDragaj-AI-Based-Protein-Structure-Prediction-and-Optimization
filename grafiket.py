@@ -85,3 +85,28 @@ def hap_grafiket(parent):
     lista.bind('<<ComboboxSelected>>', shfaq)
     shfaq()
     return dritarja
+
+
+def hap_konvergjencen(parent, results):
+    if not results:
+        return None
+    window = tk.Toplevel(parent)
+    window.title('Konvergjenca e rezultatit të fundit')
+    window.geometry('850x550')
+    ttk.Label(window, text='Propozimet SA dhe zgjerimet Beam nuk përfaqësojnë të njëjtën sasi pune.',
+              padding=10, wraplength=700).pack(anchor='w')
+    fig = Figure(figsize=(8,5),dpi=100)
+    ax = fig.add_subplot(111)
+    for r in results:
+        x,y=zip(*r.historia)
+        ax.step(x,y,where='post',label=r.algoritmi)
+    ax.set(xlabel='Kandidatët e kërkimit',ylabel='Energjia më e mirë',
+           title=f'Rezultati i fundit: {len(results[0].sekuenca)} aminoacide')
+    ax.grid(alpha=.25)
+    ax.legend()
+    fig.tight_layout()
+    canvas=FigureCanvasTkAgg(fig,master=window)
+    NavigationToolbar2Tk(canvas,window).update()
+    canvas.get_tk_widget().pack(fill='both',expand=True)
+    canvas.draw_idle()
+    return window
