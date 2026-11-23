@@ -3,7 +3,8 @@ import math
 import queue
 import threading
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
+from pathlib import Path
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
@@ -11,6 +12,7 @@ from proteina import HIDROFOBIKE, sekuenca_e_sakte, simulated_annealing, beam_se
 from matja import mat_memorien
 from grafiket import hap_grafiket
 from importimi import zgjidh_sekuencen
+from eksportimi import eksporto_koordinatat, eksporto_json
 
 class Aplikacioni:
     def __init__(self, root):
@@ -37,6 +39,8 @@ class Aplikacioni:
         self.radha = queue.Queue()
         self.rezultatet = []
         self.burimi = None
+        self.konfigurimi = None
+        self.memoriet = None
         self.zoom = 1.0
         self.fushat = {}
         anash = ttk.Frame(root)
@@ -64,6 +68,8 @@ class Aplikacioni:
         self.fushat['sekuenca'].trace_add('write', self.ndrysho_sekuencen)
         self.importo_buton = ttk.Button(majtas, text='Importo CSV / FASTA', command=self.importo)
         self.importo_buton.pack(fill='x', pady=4)
+        self.eksporto_buton = ttk.Button(majtas, text='Eksporto rezultatet', command=self.eksporto, state='disabled')
+        self.eksporto_buton.pack(fill='x', pady=4)
         self.buton = ttk.Button(majtas, text='Ekzekuto dhe krahaso', command=self.nis, style='Kryesor.TButton')
         self.buton.pack(fill='x', pady=(8, 6))
         self.zgjedhja = tk.StringVar(value='Simulated Annealing')
@@ -109,6 +115,25 @@ class Aplikacioni:
             self.burimi = record
             self.statusi.set(f'Importuar: {record["id"]}. Shtyp Ekzekuto.')
 
+    def eksporto(self):
+        if not self.rezultatet or self.konfigurimi is None:
+            return
+        path = filedialog.asksaveasfilename(parent=self.root, title='Eksporto rezultatet',
+            defaultextension='.json', filetypes=[('Rezultatet dhe parametrat','*.json'),('Koordinatat','*.csv')])
+        if not path:
+            return
+        try:
+            if Path(path).suffix.lower() == '.csv':
+                eksporto_koordinatat(path,self.rezultatet)
+            elif Path(path).suffix.lower() == '.json':
+                eksporto_json(path,self.rezultatet,self.konfigurimi,self.memoriet)
+            else:
+                raise ValueError('Përdor prapashtesën .json ose .csv.')
+        except (OSError, ValueError) as error:
+            messagebox.showerror('Eksportimi dështoi',str(error),parent=self.root)
+        else:
+            self.statusi.set('Rezultatet u eksportuan.')
+
     def nis(self):
         try:
             s = sekuenca_e_sakte(self.fushat['sekuenca'].get())
@@ -122,6 +147,9 @@ class Aplikacioni:
             return
         if self.fushat['sekuenca'].get() != s:
             self.fushat['sekuenca'].set(s)
+        self.config_ne_pune = {'pesha':pesha,'koha_s':koha,'buxheti':tentativa,
+                              'beam_width':beam,'seed_sa':42,'burimi':self.burimi}
+        self.eksporto_buton.config(state='disabled')
         self.importo_buton.config(state='disabled')
         self.buton.config(state='disabled')
         self.statusi.set('Duke llogaritur të dy algoritmet…')
@@ -141,10 +169,14 @@ class Aplikacioni:
             self.buton.config(state='normal')
             self.importo_buton.config(state='normal')
             if gabim:
+                self.eksporto_buton.config(state='normal' if self.rezultatet else 'disabled')
                 self.statusi.set('Gabim gjatë ekzekutimit.')
                 messagebox.showerror('Gabim', gabim, parent=self.root)
             else:
                 self.rezultatet = rezultatet
+                self.konfigurimi = self.config_ne_pune
+                self.memoriet = memoriet
+                self.eksporto_buton.config(state='normal')
                 self.statusi.set('Përfundoi. Zgjidh algoritmin për të parë strukturën.')
                 self.teksti.delete('1.0', 'end')
                 for r,m in zip(rezultatet, memoriet):
