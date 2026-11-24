@@ -134,7 +134,7 @@ def ploteso_drejt(prefiksi, n):
             return prefiksi + bishti
     return None
 
-def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
+def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42, *, ndalo=None):
     sekuenca = kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda)
     if type(seed) is not int:
         raise ValueError('Seed duhet të jetë numër i plotë.')
@@ -147,6 +147,8 @@ def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
     temperatura = 2.0
     if len(sekuenca) > 2:
         while r.gjeneruar < kufiri and time.perf_counter()-fillimi < sekonda:
+            if ndalo is not None and ndalo.is_set():
+                break
             kandidat = rrotullo(aktuale, rng.randrange(1, len(sekuenca)-1), rng.randrange(3), rng.choice((-1,1)))
             r.gjeneruar += 1
             if not valide(kandidat, len(sekuenca)):
@@ -166,10 +168,12 @@ def simulated_annealing(sekuenca, pesha, kufiri, sekonda, seed=42):
     r.pikat, r.energjia = me_e_mira, e_mire
     r.koha = time.perf_counter()-fillimi
     r.arsyeja = 'U arrit buxheti.' if r.gjeneruar >= kufiri else ('U arrit koha.' if len(sekuenca)>2 else 'Zinxhir i shkurtër.')
+    if ndalo is not None and ndalo.is_set():
+        r.arsyeja = 'U ndalua nga përdoruesi.'
     r.historia.append((r.gjeneruar, e_mire))
     return r
 
-def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30, *, gjurmo_pruning=False):
+def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30, *, gjurmo_pruning=False, ndalo=None):
     sekuenca = kontrollo_parametrat(sekuenca, pesha, kufiri, sekonda)
     if type(gjeresia) is not int or gjeresia <= 0:
         raise ValueError('Gjerësia Beam duhet të jetë numër i plotë pozitiv.')
@@ -187,6 +191,9 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30, *, gjurmo_pruning
                 zena = set(prefiksi)
                 x,y,z = prefiksi[-1]
                 for dx,dy,dz in DREJTIMET:
+                    if ndalo is not None and ndalo.is_set():
+                        perfundoi = False
+                        break
                     if r.gjeneruar >= kufiri or time.perf_counter()-fillimi >= sekonda:
                         perfundoi = False
                         r.arsyeja = 'U arrit buxheti.' if r.gjeneruar >= kufiri else 'U arrit koha.'
@@ -221,6 +228,9 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30, *, gjurmo_pruning
             # Ruaj një strukturë të plotë edhe kur kërkimi ndalet në nivel pjesor.
             # Ky kontroll nuk heq asnjë prefiks nga kërkimi.
             for prefiksi in beam:
+                if ndalo is not None and ndalo.is_set():
+                    perfundoi = False
+                    break
                 if time.perf_counter()-fillimi >= sekonda:
                     perfundoi = False
                     r.arsyeja = 'U arrit koha.'
@@ -244,6 +254,8 @@ def beam_search(sekuenca, pesha, kufiri, sekonda, gjeresia=30, *, gjurmo_pruning
     else:
         r.arsyeja = 'Zinxhir i shkurtër.'
     r.pikat, r.energjia = me_e_mira, e_mire
+    if ndalo is not None and ndalo.is_set():
+        r.arsyeja = 'U ndalua nga përdoruesi.'
     r.koha = time.perf_counter()-fillimi
     r.historia.append((r.gjeneruar, e_mire))
     return r

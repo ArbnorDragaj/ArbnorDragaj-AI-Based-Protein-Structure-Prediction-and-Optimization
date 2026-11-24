@@ -1,12 +1,35 @@
 """Kontrolle algoritmike me enumerim ekzakt dhe energji të pavarur."""
 import math
 import unittest
+import threading
 from proteina import energjia, beam_search, simulated_annealing, valide, ploteso_drejt
 from referenca import strukturat_ekzakte, energjia_e_pavarur, analizo_ekzakt
 from matja import mat_memorien
 
 
 class TestSaktesia(unittest.TestCase):
+    def test_ndalimi_ruan_strukturen_valide(self):
+        event=threading.Event();event.set()
+        for solver in (simulated_annealing,beam_search):
+            r=solver('AAAAAAAA',1,10000,30,ndalo=event)
+            self.assertEqual(r.gjeneruar,0)
+            self.assertTrue(valide(r.pikat,8))
+            self.assertEqual(r.energjia,energjia_e_pavarur(r.sekuenca,r.pikat))
+            self.assertEqual(r.arsyeja,'U ndalua nga përdoruesi.')
+
+    def test_ndalimi_gjate_kerkimit_ruan_historine(self):
+        class Sinjali:
+            def __init__(self): self.calls=0
+            def is_set(self):
+                self.calls+=1
+                return self.calls>=40
+        for solver in (simulated_annealing,beam_search):
+            r=solver('AAAAAAAA',1,10000,30,ndalo=Sinjali())
+            self.assertGreater(r.gjeneruar,0)
+            self.assertLess(r.gjeneruar,10000)
+            self.assertTrue(valide(r.pikat,8))
+            self.assertEqual(r.historia[-1],(r.gjeneruar,r.energjia))
+            self.assertEqual(r.arsyeja,'U ndalua nga përdoruesi.')
     def test_overflow_dhe_inputet_numerike(self):
         kubi = [(0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,1,1),(1,1,1),(1,0,1),(0,0,1)]
         with self.assertRaises(ValueError):
