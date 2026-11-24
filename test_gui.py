@@ -20,7 +20,7 @@ class TestGui(unittest.TestCase):
         self.app=Aplikacioni(self.root)
 
     def tearDown(self):
-        if hasattr(self,'root'):
+        if getattr(self,'root',None) is not None:
             self.root.after_cancel(self.app.poll_id)
             self.root.update_idletasks()
             self.root.destroy()
@@ -52,6 +52,21 @@ class TestGui(unittest.TestCase):
         self.assertTrue(self.app.konfigurimi['ndaluar'])
         self.assertEqual(self.app.memoriet,[None,None])
         self.assertIn('e pamatur',self.app.teksti.get('1.0','end'))
+
+    def test_mbyllja_pret_ndalimin_e_punes(self):
+        self.app.fushat['tentativa'].set('10000000')
+        self.app.fushat['koha'].set('30')
+        closed=[]
+        root=self.root
+        root.bind('<Destroy>',lambda event:closed.append(True) if event.widget is root else None)
+        self.app.nis();self.app.mbyll()
+        deadline=time.monotonic()+10
+        while not closed and time.monotonic()<deadline:
+            root.update();time.sleep(.01)
+        if closed:
+            self.root=None
+        self.assertTrue(closed)
+        self.assertFalse(self.app.worker.is_alive())
 
     def test_importi_i_pavlefshem_ruan_sekuencen(self):
         original=self.app.fushat['sekuenca'].get()
