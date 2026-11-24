@@ -103,10 +103,15 @@ class Aplikacioni:
         self.canvas.mpl_connect('scroll_event', self.zoom_me_maus)
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         ttk.Label(djathtas, text='Rezultatet e krahasimit', style='Nendarje.TLabel').pack(anchor='w', pady=(10, 5))
-        self.teksti = tk.Text(djathtas, height=8, wrap='word', font=('Consolas', 10),
+        rezultatet_panel = ttk.Frame(djathtas)
+        rezultatet_panel.pack(fill='x')
+        self.teksti = tk.Text(rezultatet_panel, height=8, wrap='word', font=('Consolas', 10),
                               background='white', foreground='#193744', relief='flat',
-                              padx=10, pady=9, highlightthickness=1, highlightbackground='#dce6e9')
-        self.teksti.pack(fill='x')
+                              padx=10, pady=9, highlightthickness=1, highlightbackground='#dce6e9',state='disabled')
+        scroll_rezultatet = ttk.Scrollbar(rezultatet_panel,orient='vertical',command=self.teksti.yview)
+        scroll_rezultatet.pack(side='right',fill='y')
+        self.teksti.configure(yscrollcommand=scroll_rezultatet.set)
+        self.teksti.pack(side='left',fill='both',expand=True)
         self.vizato(True)
         self.poll_id = root.after(100, self.kontrollo)
 
@@ -223,6 +228,7 @@ class Aplikacioni:
                 self.historia_buton.config(state='normal')
                 self.statusi.set('U ndalua. Rezultatet janë të pjesshme.' if self.sinjali_ndalimit.is_set()
                                 else 'Përfundoi. Zgjidh algoritmin për të parë strukturën.')
+                self.teksti.config(state='normal')
                 self.teksti.delete('1.0', 'end')
                 for r,m in zip(rezultatet, memoriet):
                     perqindja = 100*r.hequr/r.valide if r.valide else 0
@@ -235,6 +241,7 @@ class Aplikacioni:
                     self.teksti.insert('end', f'  E vlefshme: {"Po" if valide(r.pikat,len(r.sekuenca)) else "Jo"}; tentativa më e mirë: {r.tentativa_me_e_mire}; plotësim rezervë: {"Po" if r.rezerve else "Jo"}; matja e memories: {kandidatet_memories} kandidatë.\n')
                     self.teksti.insert('end', f'  Koha e rezultatit më të mirë: {r.koha_me_e_mire:.4f} s; ndalimi: {r.arsyeja}\n')
                 self.teksti.insert('end', 'Memoria matet veçmas me tracemalloc; numri i kandidatëve mund të ndryshojë nga kufiri kohor.\n')
+                self.teksti.config(state='disabled')
                 self.vizato(True)
         except queue.Empty:
             pass
