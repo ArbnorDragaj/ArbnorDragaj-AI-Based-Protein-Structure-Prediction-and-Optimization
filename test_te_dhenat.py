@@ -5,6 +5,12 @@ from te_dhenat import lexo_fasta, lexo_csv, lexo_sekuencat
 
 
 class TestTeDhenat(unittest.TestCase):
+    def test_shembujt_e_repos_perputhen(self):
+        folder=Path(__file__).resolve().parent/'shembuj'
+        csv_records=list(lexo_sekuencat(folder/'sekuenca.csv'))
+        fasta_records=list(lexo_sekuencat(folder/'sekuenca.fasta'))
+        self.assertEqual(csv_records,fasta_records)
+        self.assertEqual([len(r['sekuenca']) for r in csv_records],[4,8,6])
     def shkruaj(self, text, suffix='.fa'):
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)
