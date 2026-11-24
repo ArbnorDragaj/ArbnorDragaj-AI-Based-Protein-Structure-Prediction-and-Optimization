@@ -6,6 +6,8 @@ Struktura shfaqet në një dritare interaktive ku mund të rrotullohet me maus. 
 
 > **Kufizim:** ky është model edukativ i thjeshtuar HP në rrjetë kubike. Ai ilustron kërkimin dhe optimizimin; nuk është parashikim biologjik i saktë i strukturës reale të një proteine.
 
+Për dorëzim dhe demonstrim shih [DOREZIMI.md](DOREZIMI.md). Kërkesat origjinale ruhen te [KERKESAT_PROJEKTIT.txt](KERKESAT_PROJEKTIT.txt).
+
 ## Përmbajtja
 
 - [Qëllimi dhe funksionet](#qëllimi-dhe-funksionet)
@@ -40,7 +42,7 @@ Aplikacioni:
 - Matplotlib, i specifikuar në `requirements.txt`.
 - Një ekran grafik për dritaren 3D.
 
-Matplotlib është varësia e vetme e drejtpërdrejtë; ai instalon edhe varësitë e veta, përfshirë NumPy. Algoritmet, testet dhe eksportimi përdorin bibliotekën standarde të Python-it. Nuk përdoren biblioteka protein-folding, modele të trajnuara ose API të jashtme.
+Matplotlib është varësia e vetme e drejtpërdrejtë; ai instalon edhe varësitë e veta, përfshirë NumPy. Algoritmet dhe eksportimi përdorin bibliotekën standarde të Python-it. GUI-ja, grafikët dhe testet e tyre kërkojnë Matplotlib. Nuk përdoren biblioteka protein-folding, modele të trajnuara ose API të jashtme.
 
 ### Windows dhe VS Code
 
@@ -86,6 +88,7 @@ Nëse mungon Tkinter, instalojeni nga paketat e sistemit për shpërndarjen tuaj
 1. Shkruaj sekuencën, për shembull `ACDEFGHIKLMNPQRSTVWY`. Shkronjat e vogla pranohen dhe kthehen në të mëdha.
 2. Gjatësia përditësohet automatikisht. Mund të ndryshosh peshën e kontakteve H–H, kufirin kohor, tentativat dhe gjerësinë Beam; këto vlera duhet të jenë pozitive.
 3. Shtyp **Ekzekuto dhe krahaso**. Programi ekzekuton të dy algoritmet njëri pas tjetrit dhe shfaq përmbledhjen poshtë figurës.
+   **Ndalo** kërkon ndalim të kontrolluar. Ruhen rezultatet valide të gjetura; nëse një algoritëm nuk ka filluar, ai kthen zinxhirin fillestar. Rezultatet shënohen si të pjesshme dhe matjet e memories të ndërprera ruhen si `null`, jo si zero. Mbyllja e dritares pret ndalimin e punës në sfond.
 4. Te **Shfaq strukturën**, zgjidh Simulated Annealing ose Beam Search për të parë rezultatin përkatës.
 5. Tërhiq figurën me butonin e majtë të mausit për ta rrotulluar. Përdor rrotën e mausit mbi figurë për të ndryshuar zmadhimin. **Rivendos pamjen** kthen këndin dhe zmadhimin fillestar.
 
@@ -213,6 +216,20 @@ Kjo mund të përdoret me një CSV/FASTA të shkarkuar nga Kaggle ose burime të
 
 ## Testet
 
+Kontrolli i plotë me një komandë, përfshirë testet dhe verifikimin e artefakteve të ruajtura:
+
+```powershell
+.\.venv\Scripts\python.exe kontrollo.py
+```
+
+Në mjedis pa ekran përdor `kontrollo.py --pa-gui`. Kjo nuk rigjeneron eksperimente ose grafikë. Për krahasim direkt pa dritare dhe pa importe grafike:
+
+```powershell
+.\.venv\Scripts\python.exe krahaso.py ACDEFGHIKLMNPQRSTVWY --dalja prova_terminali --buxheti 3000 --seed 42
+```
+
+Dosja e daljes duhet të jetë e re; ruhen JSON me parametrat/rezultatet dhe CSV me koordinatat. Me `--pa-memorie` matja e memories anashkalohet shprehimisht. Rezultatet nga ndalimi manual janë të pjesshme dhe nuk duhen përzier me serinë standarde të benchmark-ut.
+
 Në Windows:
 
 ```powershell
@@ -231,6 +248,10 @@ Testet kontrollojnë inputin, vlefshmërinë, përplasjet, lidhjet e prishura, e
 
 ```text
 ├── main.py             # Ndërfaqja dhe pamja interaktive 3D
+├── krahaso.py          # Krahasimi nga terminali pa GUI
+├── kontrollo.py        # Kontrolli i plotë për dorëzim
+├── DOREZIMI.md         # Përputhja me kërkesat dhe demonstrimi
+├── KERKESAT_PROJEKTIT.txt # Kërkesat e dhëna për projektin
 ├── grafiket.py         # Shfaqja e grafikëve të ruajtur brenda aplikacionit
 ├── te_dhenat.py        # Leximi i sekuencave CSV/FASTA
 ├── importimi.py        # Zgjedhja e sekuencës nga GUI
@@ -245,6 +266,8 @@ Testet kontrollojnë inputin, vlefshmërinë, përplasjet, lidhjet e prishura, e
 ├── test_te_dhenat.py   # Formatet CSV/FASTA dhe inputet invalide
 ├── test_eksportimi.py  # Koordinatat dhe integriteti i eksportit
 ├── test_dataset.py     # Ekzekutimi dhe prejardhja e dataset-it
+├── test_matja.py       # Ndalimi i procesit të memories
+├── test_cli.py         # Ekzekutimi pa biblioteka grafike
 ├── referenca.py        # Optimumi dhe pruning-u global për raste të vogla
 ├── verifiko_rezultatet.py # Verifikimi i të dhënave dhe strukturave të ruajtura
 ├── requirements.txt    # Varësia Matplotlib
@@ -260,4 +283,4 @@ Për të kuptuar kodin, fillo me `proteina.py`, vazhdo me `main.py`, pastaj lexo
 - Cilësia varet nga sekuenca, buxheti, temperatura dhe gjerësia Beam; optimumi global nuk garantohet.
 - Një kufi kohor mund të tejkalohet pak nga një hap që është duke u kryer.
 - Matja me `tracemalloc` nuk përfshin çdo alokim native dhe nuk duhet interpretuar si memorie totale e procesit.
-- Ndërfaqja shfaq rezultatet e përfunduara; për të parë konvergjencën përdor grafikun e eksperimenteve.
+- Ndërfaqja shfaq rezultatet pasi përfundon ose ndalet krahasimi; konvergjenca e rezultatit të fundit hapet nga butoni përkatës. Nuk shfaqet animacion live i lëvizjeve.

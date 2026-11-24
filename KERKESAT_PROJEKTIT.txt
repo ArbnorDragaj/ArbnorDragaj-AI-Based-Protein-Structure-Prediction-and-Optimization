@@ -1,0 +1,238 @@
+"AI-Based Protein Structure Prediction and Optimization
+
+Problem Description
+
+Design and implement an algorithmic system for predicting a plausible three-dimensional structure of a protein from its amino acid sequence.
+
+A protein is represented as a sequence of amino acids. The protein can fold into an enormous number of possible structures, making exhaustive search computationally infeasible even for relatively short sequences.
+
+Your task is to design an efficient algorithm that searches through this large solution space and identifies a high-quality protein structure according to a predefined energy/fitness function.
+
+
+Requirements
+
+Your solution must:
+
+1. Convert an amino acid sequence into a computational representation of a protein structure.
+2. Design an algorithm for exploring possible protein configurations.
+3. Define and implement an energy/fitness function for evaluating candidate structures.
+4. Implement at least **two different algorithmic approaches** for solving the problem.
+5. Use at least one advanced algorithmic technique, such as:
+
+   * Genetic Algorithms
+   * Simulated Annealing
+   * Beam Search
+   * A* Search
+   * Branch and Bound
+   * Dynamic Programming
+   * Local Search
+   * or another justified optimization/search technique.
+6. Implement techniques for reducing the search space.
+7. Analyze the time and space complexity of the implemented algorithms.
+8. Experimentally evaluate the algorithms using proteins of different lengths and complexity.
+9. Compare the algorithms based on both solution quality and computational efficiency.
+
+
+Algorithm
+
+a. Protein Representation
+
+Represent the protein as a sequence of amino acids positioned in a 2D or 3D space.
+
+Each possible configuration represents a candidate protein structure.
+
+For example:
+
+A - C - D - E - F
+             |
+            G
+
+
+The representation must ensure that invalid structures, such as overlapping amino acids occupying the same position, are detected and rejected.
+
+
+b. Energy / Fitness Function
+
+Develop an energy or fitness function for evaluating candidate structures.
+
+The function may consider factors such as:
+
+* attractive interactions between amino acids,
+* repulsive interactions,
+* collisions,
+* neighboring amino acids,
+* structural compactness,
+* and other relevant constraints.
+
+For example:
+
+
+E(S) = E_{interaction} + E_{collision} + E_{structure}
+
+The objective is to find a structure with a minimum energy or maximum fitness, depending on the formulation chosen.
+
+You must clearly explain your chosen evaluation function.
+
+
+c. Search and Optimization
+
+Implement at least two different algorithms for searching the solution space.
+
+Possible approaches include:
+
+* Genetic Algorithm
+* Simulated Annealing
+* Beam Search
+* A* Search
+* Branch and Bound
+* Local Search
+* Hybrid algorithms
+
+You must justify why the selected algorithms are appropriate for this problem.
+
+
+d. Search-Space Reduction
+
+Because the number of possible protein configurations grows extremely quickly with protein length, exhaustive search is not practical.
+
+Your algorithm must include at least one technique for reducing the search space.
+
+Examples include:
+
+* pruning,
+* heuristic evaluation,
+* upper/lower bounds,
+* beam width limitation,
+* duplicate-state elimination,
+* symmetry reduction,
+* branch ordering,
+* or other techniques proposed by you.
+
+You must explain how the technique affects computational complexity and practical performance.
+
+
+e. Local Improvement
+
+Implement a mechanism for improving candidate structures.
+
+For example, the algorithm may modify a structure through:
+
+* rotations,
+* mutations,
+* local movements,
+* segment rearrangements,
+* or other valid transformations.
+
+The goal is to improve the structure's energy/fitness while maintaining a valid configuration.
+
+
+Input
+
+The program should receive:
+
+1. An amino acid sequence, for example:
+ACDEFGHIKLMNPQRSTVWY
+2. Protein length.
+3. Energy/interactions parameters.
+4. Maximum execution time or computational budget.
+5. Optional structural constraints.
+
+The program should support proteins of different lengths so that scalability can be evaluated.
+
+Output
+
+The program should produce:
+
+1. The predicted protein structure.
+2. The final energy/fitness score.
+3. The number of candidate configurations explored.
+4. The number of valid and invalid configurations encountered.
+5. Execution time.
+6. Memory consumption.
+7. A visualization or textual representation of the predicted structure.
+8. A comparison of the implemented algorithms.
+
+
+Evaluation Metrics
+
+The algorithms will be evaluated using:
+
+* Final energy/fitness score.
+* Structural validity.
+* Number of configurations explored.
+* Percentage of search space eliminated through pruning/optimization.
+* Execution time.
+* Memory consumption.
+* Convergence speed.
+* Scalability with increasing protein length.
+* Quality of the final solution.
+
+You should provide graphs and tables showing how the algorithms behave as the problem size increases.
+
+Challenges
+
+The main challenges include:
+
+a. The number of possible protein structures grows exponentially with protein length.
+
+b. Finding a high-quality solution without exhaustively examining every possible configuration.
+
+c. Designing an effective heuristic or fitness function.
+
+d. Avoiding local optima.
+
+e. Balancing exploration of new solutions with exploitation of promising solutions.
+
+f. Designing efficient pruning and search-space reduction techniques.
+
+g. Maintaining valid structures during mutations or local modifications.
+
+h. Scaling the algorithm to longer protein sequences.
+
+i. Comparing theoretical complexity with actual experimental performance.
+
+
+Advanced Challenge
+
+Students who want to go beyond the basic requirements may implement a hybrid optimization algorithm combining multiple techniques.
+
+For example:
+
+Genetic Algorithm
+       ↓
+Generate candidate structures
+       ↓
+Beam Search
+       ↓
+Keep strongest candidates
+       ↓
+Local Search / Simulated Annealing
+       ↓
+Final optimized structure
+
+The hybrid algorithm should be experimentally compared against the individual algorithms.
+
+The comparison should determine whether the hybrid approach provides improvements in:
+
+* solution quality,
+* execution time,
+* memory usage,
+* convergence,
+* and number of states explored.
+
+Important
+
+The main objective of this project is **not simply to produce a working program**.
+
+You are expected to demonstrate your ability to:
+
+* formulate a complex computational problem,
+* design algorithms,
+* select appropriate data structures,
+* analyze computational complexity,
+* reduce the search space,
+* optimize an algorithm,
+* conduct meaningful experiments,
+* and critically evaluate the obtained results.
+
+Simply using an existing protein-folding library or external tool without implementing and analyzing your own algorithmic solution will not satisfy the project requirements."
