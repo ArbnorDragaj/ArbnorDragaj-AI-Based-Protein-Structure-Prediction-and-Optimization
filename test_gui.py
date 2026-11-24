@@ -34,6 +34,21 @@ class TestGui(unittest.TestCase):
         self.app.fushat['sekuenca'].set('AAAD')
         self.assertIsNone(self.app.burimi)
 
+    def test_ndalo_ruan_rezultatet_e_pjesshme(self):
+        self.app.fushat['tentativa'].set('10000000')
+        self.app.fushat['koha'].set('30')
+        self.app.nis();self.app.ndalo()
+        deadline=time.monotonic()+10
+        with patch('main.messagebox.showerror') as error:
+            while self.app.ne_pune and time.monotonic()<deadline:
+                self.root.update();time.sleep(.01)
+            error.assert_not_called()
+        self.assertFalse(self.app.ne_pune)
+        self.assertEqual(len(self.app.rezultatet),2)
+        self.assertTrue(self.app.konfigurimi['ndaluar'])
+        self.assertEqual(self.app.memoriet,[None,None])
+        self.assertIn('e pamatur',self.app.teksti.get('1.0','end'))
+
     def test_importi_i_pavlefshem_ruan_sekuencen(self):
         original=self.app.fushat['sekuenca'].get()
         with patch('main.zgjidh_sekuencen',side_effect=ValueError('prove')), patch('main.messagebox.showerror') as error:

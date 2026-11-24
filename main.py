@@ -41,6 +41,11 @@ class Aplikacioni:
         self.burimi = None
         self.konfigurimi = None
         self.memoriet = None
+        self.sinjali_ndalimit = threading.Event()
+        self.worker = None
+        self.ne_pune = False
+        self.mbyllje = False
+        root.protocol('WM_DELETE_WINDOW',self.mbyll)
         self.zoom = 1.0
         self.fushat = {}
         anash = ttk.Frame(root)
@@ -72,6 +77,8 @@ class Aplikacioni:
         self.eksporto_buton.pack(fill='x', pady=4)
         self.buton = ttk.Button(majtas, text='Ekzekuto dhe krahaso', command=self.nis, style='Kryesor.TButton')
         self.buton.pack(fill='x', pady=(8, 6))
+        self.ndalo_buton = ttk.Button(majtas,text='Ndalo',command=self.ndalo,state='disabled')
+        self.ndalo_buton.pack(fill='x',pady=(0,5))
         self.zgjedhja = tk.StringVar(value='Simulated Annealing')
         ttk.Label(majtas, text='Shfaq strukturën', style='Anash.TLabel').pack(anchor='w', pady=(10,4))
         lista = ttk.Combobox(majtas, textvariable=self.zgjedhja, state='readonly',
@@ -138,6 +145,8 @@ class Aplikacioni:
             self.statusi.set('Rezultatet u eksportuan.')
 
     def nis(self):
+        if self.ne_pune or self.mbyllje:
+            return
         try:
             s = sekuenca_e_sakte(self.fushat['sekuenca'].get())
             n, tentativa, beam = (int(self.fushat[k].get()) for k in ('gjatesia','tentativa','beam'))
@@ -152,44 +161,78 @@ class Aplikacioni:
             self.fushat['sekuenca'].set(s)
         self.config_ne_pune = {'pesha':pesha,'koha_s':koha,'buxheti':tentativa,
                               'beam_width':beam,'seed_sa':42,'burimi':self.burimi}
+        self.sinjali_ndalimit.clear()
+        self.ne_pune = True
+        self.ndalo_buton.config(state='normal')
         self.eksporto_buton.config(state='disabled')
         self.importo_buton.config(state='disabled')
         self.buton.config(state='disabled')
         self.statusi.set('Duke llogaritur të dy algoritmet…')
         def puno():
             try:
-                sa = simulated_annealing(s, pesha, tentativa, koha)
-                bs = beam_search(s, pesha, tentativa, koha, beam)
-                memoriet = [mat_memorien(k, s, pesha, tentativa, koha, beam) for k in ('SA','Beam')]
+                sa = simulated_annealing(s, pesha, tentativa, koha,ndalo=self.sinjali_ndalimit)
+                bs = beam_search(s, pesha, tentativa, koha, beam,ndalo=self.sinjali_ndalimit)
+                memoriet = []
+                for k in ('SA','Beam'):
+                    try:
+                        m=mat_memorien(k,s,pesha,tentativa,koha,beam,ndalo=self.sinjali_ndalimit)
+                    except InterruptedError:
+                        m=None
+                    memoriet.append(m)
                 self.radha.put((None, [sa,bs], memoriet))
             except Exception as error:
                 self.radha.put((str(error), None, None))
-        threading.Thread(target=puno, daemon=True).start()
+        self.worker = threading.Thread(target=puno,daemon=True)
+        self.worker.start()
+
+    def ndalo(self):
+        self.sinjali_ndalimit.set()
+        self.ndalo_buton.config(state='disabled')
+        if self.ne_pune:
+            self.statusi.set('Duke ndaluar; ruhet rezultati më i mirë i gjetur.')
+
+    def mbyll(self):
+        self.mbyllje = True
+        self.ndalo()
+        self._mbyll_kur_gati()
+
+    def _mbyll_kur_gati(self):
+        if self.worker is not None and self.worker.is_alive():
+            self.root.after(50,self._mbyll_kur_gati)
+            return
+        self.root.after_cancel(self.poll_id)
+        self.root.destroy()
 
     def kontrollo(self):
         try:
             gabim, rezultatet, memoriet = self.radha.get_nowait()
+            self.ne_pune = False
+            self.ndalo_buton.config(state='disabled')
             self.buton.config(state='normal')
             self.importo_buton.config(state='normal')
             if gabim:
                 self.eksporto_buton.config(state='normal' if self.rezultatet else 'disabled')
                 self.statusi.set('Gabim gjatë ekzekutimit.')
-                messagebox.showerror('Gabim', gabim, parent=self.root)
+                if not self.mbyllje:
+                    messagebox.showerror('Gabim', gabim, parent=self.root)
             else:
                 self.rezultatet = rezultatet
-                self.konfigurimi = self.config_ne_pune
+                self.konfigurimi = {**self.config_ne_pune,'ndaluar':self.sinjali_ndalimit.is_set()}
                 self.memoriet = memoriet
                 self.eksporto_buton.config(state='normal')
                 self.historia_buton.config(state='normal')
-                self.statusi.set('Përfundoi. Zgjidh algoritmin për të parë strukturën.')
+                self.statusi.set('U ndalua. Rezultatet janë të pjesshme.' if self.sinjali_ndalimit.is_set()
+                                else 'Përfundoi. Zgjidh algoritmin për të parë strukturën.')
                 self.teksti.delete('1.0', 'end')
                 for r,m in zip(rezultatet, memoriet):
                     perqindja = 100*r.hequr/r.valide if r.valide else 0
-                    self.teksti.insert('end', f'{r.algoritmi}: E={r.energjia:g} | koha={r.koha:.4f}s | memoria={m["bajte"]/1024:.1f} KiB\n')
+                    memoria = f'{m["bajte"]/1024:.1f} KiB' if m is not None else 'e pamatur (ndalim)'
+                    kandidatet_memories = m['kandidate'] if m is not None else 'të pamatur'
+                    self.teksti.insert('end', f'{r.algoritmi}: E={r.energjia:g} | koha={r.koha:.4f}s | memoria={memoria}\n')
                     self.teksti.insert('end', f'  Kontakte H–H jo radhazi: {kontaktet(r.sekuenca, r.pikat)}\n')
                     self.teksti.insert('end', f'  Vlerësime plotësimi: {r.plotesime_te_vleresuara}; kandidatë + plotësime: {r.gjeneruar+r.plotesime_te_vleresuara}\n')
                     self.teksti.insert('end', f'  Kandidatë: {r.gjeneruar}; validë: {r.valide}; invalidë: {r.invalide}; hequr nga Beam: {r.hequr} ({perqindja:.1f}% e validëve)\n')
-                    self.teksti.insert('end', f'  E vlefshme: {"Po" if valide(r.pikat,len(r.sekuenca)) else "Jo"}; tentativa më e mirë: {r.tentativa_me_e_mire}; plotësim rezervë: {"Po" if r.rezerve else "Jo"}; matja e memories: {m["kandidate"]} kandidatë.\n')
+                    self.teksti.insert('end', f'  E vlefshme: {"Po" if valide(r.pikat,len(r.sekuenca)) else "Jo"}; tentativa më e mirë: {r.tentativa_me_e_mire}; plotësim rezervë: {"Po" if r.rezerve else "Jo"}; matja e memories: {kandidatet_memories} kandidatë.\n')
                     self.teksti.insert('end', f'  Koha e rezultatit më të mirë: {r.koha_me_e_mire:.4f} s; ndalimi: {r.arsyeja}\n')
                 self.teksti.insert('end', 'Memoria matet veçmas me tracemalloc; numri i kandidatëve mund të ndryshojë nga kufiri kohor.\n')
                 self.vizato(True)
